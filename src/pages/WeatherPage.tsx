@@ -20,6 +20,12 @@ const WeatherPage: React.FC = () => {
   const startCamera = async () => {
     try {
       setError(null)
+      
+      // Check if mediaDevices is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera not supported on this device')
+      }
+      
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { 
           facingMode: 'environment',
@@ -33,10 +39,11 @@ const WeatherPage: React.FC = () => {
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream
-        videoRef.current.play()
+        await videoRef.current.play()
       }
     } catch (err) {
-      setError('Camera access denied. Please allow camera permissions for sky analysis.')
+      const errorMessage = err instanceof Error ? err.message : 'Camera access denied'
+      setError(`Camera access failed: ${errorMessage}. Please allow camera permissions for sky analysis.`)
       console.error('Camera error:', err)
     }
   }

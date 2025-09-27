@@ -33,6 +33,12 @@ const CelestiNavPage: React.FC = () => {
   const startCamera = async () => {
     try {
       setError(null)
+      
+      // Check if mediaDevices is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera not supported on this device')
+      }
+      
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: 'environment',
@@ -46,10 +52,11 @@ const CelestiNavPage: React.FC = () => {
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream
-        videoRef.current.play()
+        await videoRef.current.play()
       }
     } catch (err) {
-      setError('Camera access denied. Please allow camera permissions.')
+      const errorMessage = err instanceof Error ? err.message : 'Camera access denied'
+      setError(`Camera access failed: ${errorMessage}. Please allow camera permissions.`)
       console.error('Camera error:', err)
     }
   }
@@ -136,9 +143,9 @@ const CelestiNavPage: React.FC = () => {
     }
   }, [cameraStream])
 
-  // Full-screen camera interface
+  // Full-screen camera interface with disabled scrolling
   return (
-    <div className="fixed inset-0 bg-black z-50 overflow-hidden">
+    <div className="fixed inset-0 bg-black z-50 overflow-hidden touch-none" style={{ height: '100vh', width: '100vw', position: 'fixed' }}>
       {/* Camera Video Feed */}
       {isCameraActive && (
         <video
@@ -225,47 +232,41 @@ const CelestiNavPage: React.FC = () => {
         </div>
       )}
 
-      {/* Bottom Controls */}
-      <div className="absolute bottom-0 left-0 right-0 pb-safe-area-inset-bottom">
-        <div className="flex items-center justify-center px-8 py-6">
-          <div className="flex items-center justify-between w-full max-w-sm">
-            {/* Left spacer for centering */}
-            <div className="w-16"></div>
+      {/* Shutter Button - Above Bottom Navigation */}
+      <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-20">
+        <button
+          onClick={captureReading}
+          disabled={isCalculating || !sensorPermission}
+          className="w-14 h-14 bg-white border-3 border-white rounded-full shadow-lg active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isCalculating ? (
+            <div className="w-full h-full rounded-full bg-yellow-400 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+            </div>
+          ) : (
+            <div className="w-full h-full rounded-full bg-red-500"></div>
+          )}
+        </button>
+      </div>
 
-            {/* Shutter Button */}
-            <button
-              onClick={captureReading}
-              disabled={isCalculating || !sensorPermission}
-              className="w-20 h-20 bg-white border-4 border-white rounded-full shadow-lg active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isCalculating ? (
-                <div className="w-full h-full rounded-full bg-yellow-400 flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
-                </div>
-              ) : (
-                <div className="w-full h-full rounded-full bg-red-500"></div>
-              )}
-            </button>
-
-            {/* Settings/Info Button */}
-            <button
-              onClick={() => {
-                // Simple toggle for basic environmental settings
-                const newElevation = prompt(`Current elevation: ${elevation}m\nEnter new elevation:`, elevation.toString())
-                if (newElevation && !isNaN(Number(newElevation))) {
-                  setElevation(Number(newElevation))
-                }
-              }}
-              className="w-12 h-12 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-lg border border-white/30 active:scale-95 transition-transform"
-            >
-              ⚙️
-            </button>
-          </div>
-        </div>
+      {/* Settings Button - Bottom Right */}
+      <div className="absolute bottom-4 right-4 z-10">
+        <button
+          onClick={() => {
+            // Simple toggle for basic environmental settings
+            const newElevation = prompt(`Current elevation: ${elevation}m\nEnter new elevation:`, elevation.toString())
+            if (newElevation && !isNaN(Number(newElevation))) {
+              setElevation(Number(newElevation))
+            }
+          }}
+          className="w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-sm border border-white/30 active:scale-95 transition-transform"
+        >
+          ⚙️
+        </button>
       </div>
 
       {/* Status indicator - bottom left */}
-      <div className="absolute bottom-4 left-4 text-white text-xs">
+      <div className="absolute bottom-4 left-4 text-white text-xs z-10">
         <div className="bg-black/50 backdrop-blur-sm rounded px-2 py-1">
           <div className="flex items-center gap-1">
             <span className={`w-2 h-2 rounded-full ${sensorPermission ? 'bg-green-400' : 'bg-red-400'}`}></span>
