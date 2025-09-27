@@ -1,24 +1,20 @@
 import { useState, useEffect } from 'react'
 import { offlineDB, Measurement, WeatherReading, UserSession } from '../services/database'
 
-export const useDatabase = () => {
+export function useDatabase() {
   const [isInitialized, setIsInitialized] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const initDB = async () => {
-      try {
-        await offlineDB.init()
-        setIsInitialized(true)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Database initialization failed')
-      }
-    }
-    
-    initDB()
+    // Since we're using Flask backend with SQLAlchemy,
+    // we don't need client-side database initialization
+    setIsInitialized(true)
   }, [])
 
-  return { isInitialized, error }
+  return {
+    isInitialized,
+    error
+  }
 }
 
 export const useMeasurements = () => {
@@ -58,24 +54,24 @@ export const useMeasurements = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(measurement)
       })
-      
+
       if (backendData.ok) {
         const result = await backendData.json()
         const savedMeasurement = result.data
-        
+
         // Also save to local IndexedDB as backup
         const localMeasurement: Measurement = {
           id: `local_${savedMeasurement.id}`,
           timestamp: Date.parse(savedMeasurement.timestamp),
           ...measurement
         }
-        
+
         try {
           await offlineDB.saveMeasurement(localMeasurement)
         } catch (localError) {
           console.warn('Failed to save to local storage:', localError)
         }
-        
+
         await loadMeasurements()
         return savedMeasurement
       } else {
@@ -83,14 +79,14 @@ export const useMeasurements = () => {
       }
     } catch (error) {
       console.error('Failed to save measurement:', error)
-      
+
       // Fallback to local storage if backend fails
       const localMeasurement: Measurement = {
         id: `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         timestamp: Date.now(),
         ...measurement
       }
-      
+
       await offlineDB.saveMeasurement(localMeasurement)
       await loadMeasurements()
       return localMeasurement

@@ -1,51 +1,59 @@
-// Authentication hook for CelestiNav - React adaptation of Replit Auth integration
-import { useQuery } from "@tanstack/react-query";
 
-export interface User {
-  id: string;
-  email?: string;
-  firstName?: string;
-  lastName?: string;
-  profileImageUrl?: string;
-  createdAt?: string;
-  updatedAt?: string;
+import { useState, useEffect } from 'react'
+
+interface User {
+  id: string
+  email: string
+  first_name?: string
+  last_name?: string
+  profile_image_url?: string
 }
 
 export function useAuth() {
-  const { data: user, isLoading, error } = useQuery<User>({
-    queryKey: ["/api/auth/user"],
-    queryFn: async () => {
-      const response = await fetch("/api/auth/user", {
-        credentials: 'include' // Include cookies for session
-      });
-      
-      if (response.status === 401) {
-        // User is not authenticated, return null
-        return null;
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [user, setUser] = useState<User | null>(null)
+
+  useEffect(() => {
+    checkAuthStatus()
+  }, [])
+
+  const checkAuthStatus = async () => {
+    try {
+      const response = await fetch('/api/auth/user')
+      if (response.ok) {
+        const userData = await response.json()
+        setUser(userData)
+        setIsAuthenticated(true)
+      } else {
+        setIsAuthenticated(false)
+        setUser(null)
       }
-      
-      if (!response.ok) {
-        throw new Error(`Authentication check failed: ${response.status}`);
-      }
-      
-      return response.json();
-    },
-    retry: false,
-    refetchOnWindowFocus: false,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+    } catch (error) {
+      console.error('Auth check failed:', error)
+      setIsAuthenticated(false)
+      setUser(null)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const logout = async () => {
+    try {
+      await fetch('/api/logout')
+      setIsAuthenticated(false)
+      setUser(null)
+      window.location.href = '/'
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
+  }
 
   return {
-    user: user || null,
+    isAuthenticated,
     isLoading,
-    isAuthenticated: !!user,
-    error,
-    // Convenience methods
-    login: () => {
-      window.location.href = '/api/login';
-    },
-    logout: () => {
-      window.location.href = '/api/logout';
-    }
-  };
+    user,
+    logout,
+    checkAuthStatus
+  }
 }

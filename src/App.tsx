@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react'
 import BottomNavigation from './components/BottomNavigation'
 import HomePage from './pages/HomePage'
@@ -22,8 +23,19 @@ function App() {
     }
   }, [error])
 
-  // Show landing page for unauthenticated users
-  if (isLoading || !isAuthenticated) {
+  // Show loading or landing page for unauthenticated users
+  if (isLoading) {
+    return (
+      <div className="h-screen w-full bg-primary-800 text-text-primary flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-blue mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isAuthenticated) {
     return <LandingPage />
   }
 
