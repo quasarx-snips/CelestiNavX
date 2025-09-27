@@ -16,6 +16,8 @@ const CelestiNavPage: React.FC = () => {
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
   const [isCameraActive, setIsCameraActive] = useState(false)
   const [showResult, setShowResult] = useState(false)
+  const [showDatabase, setShowDatabase] = useState(false)
+  const [selectedMeasurement, setSelectedMeasurement] = useState<any>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
 
   const { measurements } = useMeasurements()
@@ -151,6 +153,22 @@ const CelestiNavPage: React.FC = () => {
     }
   }
 
+  const toggleDatabase = () => {
+    setShowDatabase(!showDatabase)
+    setSelectedMeasurement(null)
+  }
+
+  const selectMeasurement = (measurement: any) => {
+    setSelectedMeasurement(measurement)
+    if (measurement.latitude && measurement.longitude) {
+      setLastResult({ lat: measurement.latitude, lng: measurement.longitude })
+      setShowResult(true)
+      setTimeout(() => {
+        setShowResult(false)
+      }, 8000)
+    }
+  }
+
   useEffect(() => {
     if (cameraStream && videoRef.current) {
       videoRef.current.srcObject = cameraStream
@@ -278,8 +296,14 @@ const CelestiNavPage: React.FC = () => {
         </button>
       </div>
 
-      {/* Settings Button - Bottom Right */}
-      <div className="absolute bottom-4 right-4 z-10">
+      {/* Settings and Database Buttons - Bottom Right */}
+      <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-2">
+        <button
+          onClick={toggleDatabase}
+          className="w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-sm border border-white/30 active:scale-95 transition-transform"
+        >
+          📊
+        </button>
         <button
           onClick={() => {
             // Simple toggle for basic environmental settings
@@ -294,6 +318,96 @@ const CelestiNavPage: React.FC = () => {
         </button>
       </div>
 
+      {/* Database Panel */}
+      {showDatabase && (
+        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm z-30 flex items-center justify-center p-4">
+          <div className="bg-black/90 rounded-lg p-4 max-w-sm w-full max-h-96 overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-white font-bold text-lg">Stored Locations</h3>
+              <button
+                onClick={toggleDatabase}
+                className="text-white/70 hover:text-white text-xl"
+              >
+                ✕
+              </button>
+            </div>
+            
+            {measurements.length === 0 ? (
+              <div className="text-center text-white/70 py-8">
+                <div className="text-3xl mb-2">📍</div>
+                <p>No measurements saved yet</p>
+                <p className="text-sm mt-1">Capture your first reading!</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {measurements.slice(0, 10).map((measurement) => (
+                  <button
+                    key={measurement.id}
+                    onClick={() => selectMeasurement(measurement)}
+                    className="w-full text-left p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors border border-white/20"
+                  >
+                    <div className="flex justify-between items-start mb-1">
+                      <span className="text-white font-medium text-sm">
+                        #{measurement.id}
+                      </span>
+                      <span className="text-white/60 text-xs">
+                        {new Date(measurement.timestamp).toLocaleDateString()}
+                      </span>
+                    </div>
+                    
+                    {measurement.latitude && measurement.longitude ? (
+                      <div className="text-white/80 text-xs font-mono space-y-1">
+                        <div>Lat: {measurement.latitude.toFixed(6)}°</div>
+                        <div>Lng: {measurement.longitude.toFixed(6)}°</div>
+                        <div className="text-white/60">
+                          Pitch: {measurement.pitch.toFixed(1)}° | Az: {measurement.heading.toFixed(1)}°
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-white/60 text-xs">No location data</div>
+                    )}
+                    
+                    {measurement.calculationMethod && (
+                      <div className="mt-1">
+                        <span className={`text-xs px-2 py-1 rounded ${
+                          measurement.calculationMethod === 'solar' 
+                            ? 'bg-yellow-500/20 text-yellow-300' 
+                            : 'bg-blue-500/20 text-blue-300'
+                        }`}>
+                          {measurement.calculationMethod.toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                  </button>
+                ))}
+                
+                {measurements.length > 10 && (
+                  <div className="text-center text-white/60 text-xs py-2">
+                    Showing latest 10 of {measurements.length} measurements
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Selected Measurement Details */}
+      {selectedMeasurement && (
+        <div className="absolute top-32 left-1/2 -translate-x-1/2 text-center text-white z-10">
+          <div className="bg-blue-600/90 backdrop-blur-sm rounded-lg px-4 py-3">
+            <div className="text-sm font-bold mb-1">Measurement #{selectedMeasurement.id}</div>
+            <div className="text-xs font-mono">
+              <div>Lat: {selectedMeasurement.latitude?.toFixed(6)}°</div>
+              <div>Lng: {selectedMeasurement.longitude?.toFixed(6)}°</div>
+              <div className="text-blue-200 mt-1">
+                Captured: {new Date(selectedMeasurement.timestamp).toLocaleString()}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Status indicator - bottom left */}
       <div className="absolute bottom-4 left-4 text-white text-xs z-10">
         <div className="bg-black/50 backdrop-blur-sm rounded px-2 py-1">
@@ -301,6 +415,11 @@ const CelestiNavPage: React.FC = () => {
             <span className={`w-2 h-2 rounded-full ${sensorPermission ? 'bg-green-400' : 'bg-red-400'}`}></span>
             <span>{sensorPermission ? 'SENSORS ACTIVE' : 'NO SENSORS'}</span>
           </div>
+          {measurements.length > 0 && (
+            <div className="mt-1 text-white/70">
+              {measurements.length} saved
+            </div>
+          )}
         </div>
       </div>
     </div>
