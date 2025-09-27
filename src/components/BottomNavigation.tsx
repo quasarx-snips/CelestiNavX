@@ -57,7 +57,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeTab, onTabCha
   ] as const
 
   return (
-    <nav className="glass border-t border-white/20 shadow-card-lg">
+    <nav className="bottom-nav">
       <div className="flex justify-around items-center max-w-lg mx-auto px-3 py-2">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id
@@ -73,12 +73,11 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeTab, onTabCha
                 transition-all duration-300 cubic-bezier(0.4, 0, 0.2, 1)
                 transform-gpu hover:scale-105 active:scale-95
                 ${isActive 
-                  ? 'text-accent-primary bg-surface-50 shadow-card-hover scale-105 elevated' 
+                  ? 'nav-tab-active scale-105' 
                   : isEmergency
-                    ? 'text-accent-error hover:text-red-300 hover:bg-surface-50/20 hover:shadow-card'
-                    : 'text-text-inverse/70 hover:text-text-inverse hover:bg-surface-50/20 hover:shadow-card'
+                    ? 'nav-tab nav-tab-emergency'
+                    : 'nav-tab'
                 }
-                backdrop-blur-sm
               `}
               aria-label={tab.label}
               role="tab"
@@ -108,21 +107,16 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeTab, onTabCha
               {isActive && (
                 <>
                   {/* Modern bottom indicator */}
-                  <div className="absolute -bottom-1.5 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-gradient-primary rounded-full shadow-glow-purple animate-scale-in" />
+                  <div className="absolute -bottom-1.5 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-white rounded-full animate-scale-in" />
                   
                   {/* Subtle background glow */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-accent-primary/10 to-transparent rounded-button animate-fade-in" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent rounded-button animate-fade-in" />
                 </>
-              )}
-              
-              {/* Hover indicator for inactive tabs */}
-              {!isActive && (
-                <div className="absolute inset-0 bg-transparent rounded-button transition-all duration-300 ease-out group-hover:bg-surface-50/30 group-hover:backdrop-blur-sm" />
               )}
               
               {/* Emergency pulse indicator */}
               {isEmergency && !isActive && (
-                <div className="absolute top-1.5 right-1.5 w-2 h-2 bg-accent-error rounded-full animate-pulse opacity-80 shadow-glow-pink" />
+                <div className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-400 rounded-full animate-pulse opacity-80" />
               )}
             </button>
           )

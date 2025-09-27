@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
+import ThemeToggle from '../components/ThemeToggle'
 
 const HomePage: React.FC = () => {
   const { user, logout } = useAuth()
@@ -18,14 +19,18 @@ const HomePage: React.FC = () => {
     <div className="min-h-screen p-4 page-transition">
       <div className="max-w-md mx-auto space-y-4">
         {/* Header with app branding */}
-        <div className="text-center mb-6">
-          <div className="flex items-center justify-center mb-3">
-            <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center mr-3 shadow-card-md">
-              <span className="text-2xl">🧭</span>
-            </div>
-            <div className="text-left">
-              <h1 className="text-2xl font-bold text-text-inverse">CelestiNav</h1>
-              <p className="text-text-inverse/80 text-sm">Offline Survival Navigation System</p>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-contrast-high">CelestiNav</h1>
+            <p className="text-contrast-medium text-sm">Offline Survival Navigation System</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <div className="text-right">
+              <div className="flex items-center">
+                <span className="text-contrast-medium text-sm mr-2">System</span>
+                <span className="status-dot status-online"></span>
+              </div>
             </div>
           </div>
         </div>
@@ -65,10 +70,10 @@ const HomePage: React.FC = () => {
                   </div>
                 )}
                 <div>
-                  <p className="text-text-primary font-semibold text-sm">
+                  <p className="text-contrast-high font-semibold text-sm">
                     {user.first_name} {user.last_name}
                   </p>
-                  <p className="text-text-secondary text-xs">{user.email}</p>
+                  <p className="text-contrast-medium text-xs">{user.email}</p>
                 </div>
               </div>
               <button 
@@ -84,7 +89,7 @@ const HomePage: React.FC = () => {
         {/* Current Status Card */}
         <div className="info-card animate-slide-up">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold text-text-primary flex items-center">
+            <h3 className="text-lg font-bold text-contrast-high flex items-center">
               <span className="mr-2">🎯</span>
               Current Status
             </h3>
@@ -92,28 +97,28 @@ const HomePage: React.FC = () => {
           </div>
           <div className="space-y-3">
             <div className="flex justify-between items-center py-1">
-              <span className="text-text-secondary text-sm">Mode</span>
+              <span className="text-contrast-medium text-sm">Mode</span>
               <div className="flex items-center">
                 <span className="status-dot bg-accent-warning mr-2"></span>
                 <span className="text-accent-warning font-semibold text-sm">Day Mode</span>
               </div>
             </div>
             <div className="flex justify-between items-center py-1">
-              <span className="text-text-secondary text-sm">Altitude</span>
+              <span className="text-contrast-medium text-sm">Altitude</span>
               <div className="flex items-center">
                 <span className="status-dot status-error mr-2"></span>
                 <span className="text-accent-error font-semibold text-sm">--- ASL</span>
               </div>
             </div>
             <div className="flex justify-between items-center py-1">
-              <span className="text-text-secondary text-sm">Time Local</span>
-              <span className="text-text-primary font-semibold text-sm font-mono">
+              <span className="text-contrast-medium text-sm">Time Local</span>
+              <span className="text-contrast-high font-semibold text-sm font-mono">
                 {currentTime.toLocaleTimeString([], { hour12: false })}
               </span>
             </div>
             <div className="flex justify-between items-center py-1">
-              <span className="text-text-secondary text-sm">Magnetic Declination</span>
-              <span className="text-text-primary font-semibold text-sm">1.2°</span>
+              <span className="text-contrast-medium text-sm">Magnetic Declination</span>
+              <span className="text-contrast-high font-semibold text-sm">1.2°</span>
             </div>
           </div>
         </div>
@@ -143,12 +148,12 @@ const HomePage: React.FC = () => {
         </button>
 
         {/* Status Footer */}
-        <div className="text-center text-text-muted text-xs space-y-1 pt-2">
+        <div className="text-center text-contrast-medium text-xs space-y-1 pt-2">
           <div className="flex items-center justify-center">
             <span className="status-dot status-online mr-2"></span>
-            <span className="text-text-inverse/60">System ready • All sensors active</span>
+            <span className="text-contrast-medium">System ready • All sensors active</span>
           </div>
-          <p className="text-text-inverse/60">Last sync: {currentTime.toLocaleDateString()}</p>
+          <p className="text-contrast-medium">Last sync: {currentTime.toLocaleDateString()}</p>
         </div>
       </div>
     </div>

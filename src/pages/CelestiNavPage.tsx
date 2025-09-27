@@ -213,12 +213,12 @@ const CelestiNavPage: React.FC = () => {
       <div className="max-w-md mx-auto space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-text-inverse flex items-center">
+          <h1 className="text-xl font-bold text-contrast-high flex items-center">
             <span className="mr-2">{mode === 'gps' ? '📡' : '☀️'}</span>
             {mode === 'gps' ? 'GPS Navigator' : 'Solar Navigator'}
           </h1>
           <div className="flex items-center">
-            <span className="text-text-inverse/70 text-sm mr-2">
+            <span className="text-contrast-medium text-sm mr-2">
               {isActive ? 'Online' : 'Offline'}
             </span>
             <span className={`status-dot ${isActive ? 'status-online' : 'status-offline'}`}></span>
