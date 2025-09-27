@@ -209,16 +209,16 @@ const CelestiNavPage: React.FC = () => {
   const isActive = mode === 'gps' ? gpsPermission : sensorPermission
 
   return (
-    <div className="min-h-screen bg-primary-800 p-4 page-transition">
+    <div className="min-h-screen p-4 page-transition">
       <div className="max-w-md mx-auto space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-text-primary flex items-center">
+          <h1 className="text-xl font-bold text-text-inverse flex items-center">
             <span className="mr-2">{mode === 'gps' ? '📡' : '☀️'}</span>
-            GPS Tracker
+            {mode === 'gps' ? 'GPS Navigator' : 'Solar Navigator'}
           </h1>
           <div className="flex items-center">
-            <span className="text-text-secondary text-sm mr-2">
+            <span className="text-text-inverse/70 text-sm mr-2">
               {isActive ? 'Online' : 'Offline'}
             </span>
             <span className={`status-dot ${isActive ? 'status-online' : 'status-offline'}`}></span>
@@ -259,9 +259,9 @@ const CelestiNavPage: React.FC = () => {
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="relative">
                 {/* Main crosshair */}
-                <div className="w-12 h-12 border-2 border-accent-orange rounded-full opacity-80"></div>
-                <div className="absolute top-1/2 left-1/2 w-6 h-0.5 bg-accent-orange -translate-x-1/2 -translate-y-1/2"></div>
-                <div className="absolute top-1/2 left-1/2 w-0.5 h-6 bg-accent-orange -translate-x-1/2 -translate-y-1/2"></div>
+                <div className="w-12 h-12 border-2 border-accent-primary rounded-full opacity-90"></div>
+                <div className="absolute top-1/2 left-1/2 w-6 h-0.5 bg-accent-primary -translate-x-1/2 -translate-y-1/2"></div>
+                <div className="absolute top-1/2 left-1/2 w-0.5 h-6 bg-accent-primary -translate-x-1/2 -translate-y-1/2"></div>
                 
                 {/* Minimal pitch and azimuth display below crosshair */}
                 <div className="absolute top-8 left-1/2 -translate-x-1/2 text-center text-white">
@@ -278,7 +278,7 @@ const CelestiNavPage: React.FC = () => {
             {/* Exit camera button */}
             <button 
               onClick={stopCamera}
-              className="absolute top-4 right-4 bg-accent-red/80 hover:bg-accent-red text-white rounded-full p-3 backdrop-blur-sm transition-all z-50"
+              className="absolute top-4 right-4 bg-accent-error/80 hover:bg-accent-error text-white rounded-full p-3 backdrop-blur-sm transition-all z-50"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -313,7 +313,7 @@ const CelestiNavPage: React.FC = () => {
               <div className="text-text-secondary text-sm flex items-center justify-center">
                 <div className="w-8 h-8 border border-text-secondary rounded-full mr-2 relative">
                   <div 
-                    className="absolute top-0.5 left-1/2 w-0.5 h-3 bg-accent-green transform -translate-x-1/2 origin-bottom"
+                    className="absolute top-0.5 left-1/2 w-0.5 h-3 bg-accent-success transform -translate-x-1/2 origin-bottom"
                     style={{ transform: `translate(-50%, 0) rotate(${heading}deg)` }}
                   ></div>
                 </div>
@@ -340,6 +340,11 @@ const CelestiNavPage: React.FC = () => {
                   <div className="text-text-secondary text-xs">
                     Accuracy: ±{gpsLocation.accuracy?.toFixed(0)}m
                   </div>
+                </div>
+              ) : gpsLoading ? (
+                <div className="text-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-accent-primary border-t-transparent mx-auto mb-2"></div>
+                  <div className="text-text-secondary text-sm">Getting location...</div>
                 </div>
               ) : (
                 <div className="text-center py-4">
@@ -378,7 +383,7 @@ const CelestiNavPage: React.FC = () => {
                   type="number"
                   value={elevation}
                   onChange={(e) => setElevation(Number(e.target.value))}
-                  className="w-full bg-primary-700 border border-primary-500/50 rounded-lg px-3 py-2 text-text-primary text-sm focus:border-accent-blue focus:outline-none"
+                  className="w-full bg-surface-50/90 backdrop-blur-sm border border-white/30 rounded-lg px-3 py-2 text-text-primary text-sm focus:border-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary/20"
                 />
               </div>
               <div>
@@ -387,7 +392,7 @@ const CelestiNavPage: React.FC = () => {
                   type="number"
                   value={pressure}
                   onChange={(e) => setPressure(Number(e.target.value))}
-                  className="w-full bg-primary-700 border border-primary-500/50 rounded-lg px-3 py-2 text-text-primary text-sm focus:border-accent-blue focus:outline-none"
+                  className="w-full bg-surface-50/90 backdrop-blur-sm border border-white/30 rounded-lg px-3 py-2 text-text-primary text-sm focus:border-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary/20"
                 />
               </div>
             </div>
@@ -397,7 +402,7 @@ const CelestiNavPage: React.FC = () => {
                 type="number"
                 value={temperature}
                 onChange={(e) => setTemperature(Number(e.target.value))}
-                className="w-full bg-primary-700 border border-primary-500/50 rounded-lg px-3 py-2 text-text-primary text-sm focus:border-accent-blue focus:outline-none"
+                className="w-full bg-surface-50/90 backdrop-blur-sm border border-white/30 rounded-lg px-3 py-2 text-text-primary text-sm focus:border-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary/20"
               />
             </div>
           </div>
@@ -424,21 +429,21 @@ const CelestiNavPage: React.FC = () => {
 
         {/* Results */}
         {lastResult && (
-          <div className="info-card bg-accent-green/10 border-accent-green/30 animate-fade-in">
+          <div className="gradient-card-blue animate-fade-in">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-accent-green font-bold text-sm">
+              <h3 className="text-white font-bold text-sm">
                 {mode === 'gps' ? 'GPS LOCATION' : 'CALCULATED POSITION'}
               </h3>
-              <span className="status-dot status-online"></span>
+              <span className="status-dot bg-white/90"></span>
             </div>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-text-secondary">Latitude:</span>
-                <span className="text-accent-green font-mono font-bold">{lastResult.lat.toFixed(6)}°</span>
+                <span className="text-white/80">Latitude:</span>
+                <span className="text-white font-mono font-bold">{lastResult.lat.toFixed(6)}°</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-text-secondary">Longitude:</span>
-                <span className="text-accent-green font-mono font-bold">{lastResult.lng.toFixed(6)}°</span>
+                <span className="text-white/80">Longitude:</span>
+                <span className="text-white font-mono font-bold">{lastResult.lng.toFixed(6)}°</span>
               </div>
             </div>
           </div>
@@ -462,12 +467,12 @@ const CelestiNavPage: React.FC = () => {
 
         {/* Error Display */}
         {error && (
-          <div className="info-card bg-accent-red/10 border-accent-red/30 animate-fade-in">
+          <div className="info-card bg-accent-error/10 border-accent-error/30 animate-fade-in">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-accent-red font-bold text-sm">ERROR</h3>
+              <h3 className="text-accent-error font-bold text-sm">ERROR</h3>
               <span className="status-dot status-error"></span>
             </div>
-            <p className="text-accent-red text-sm">{error}</p>
+            <p className="text-accent-error text-sm">{error}</p>
           </div>
         )}
 
@@ -480,7 +485,7 @@ const CelestiNavPage: React.FC = () => {
         </div>
 
         {/* User info footer */}
-        <div className="text-center text-text-muted text-xs pt-2">
+        <div className="text-center text-text-inverse/50 text-xs pt-2">
           <div className="flex items-center justify-center mb-1">
             <span className="status-dot status-offline mr-2"></span>
             <span>Offline Mode</span>
