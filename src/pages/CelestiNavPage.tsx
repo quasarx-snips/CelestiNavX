@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react'
 import { useMeasurements } from '../hooks/useDatabase'
 import { apiService } from '../services/api'
@@ -18,9 +19,19 @@ const CelestiNavPage: React.FC = () => {
   const [gpsPermission, setGpsPermission] = useState(false)
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
   const [isCameraActive, setIsCameraActive] = useState(false)
+  const [isFullScreenCamera, setIsFullScreenCamera] = useState(false)
+  const [currentTime, setCurrentTime] = useState(new Date())
   const videoRef = useRef<HTMLVideoElement>(null)
 
   const { measurements } = useMeasurements()
+
+  // Update time every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date())
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
 
   // Camera functionality
   const startCamera = async () => {
@@ -29,13 +40,14 @@ const CelestiNavPage: React.FC = () => {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { 
           facingMode: 'environment',
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
         }
       })
       
       setCameraStream(stream)
       setIsCameraActive(true)
+      setIsFullScreenCamera(true)
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream
@@ -52,6 +64,7 @@ const CelestiNavPage: React.FC = () => {
       cameraStream.getTracks().forEach(track => track.stop())
       setCameraStream(null)
       setIsCameraActive(false)
+      setIsFullScreenCamera(false)
     }
     if (videoRef.current) {
       videoRef.current.srcObject = null
@@ -173,6 +186,11 @@ const CelestiNavPage: React.FC = () => {
         })
 
         setLastResult({ lat: result.latitude, lng: result.longitude })
+        
+        // Stop camera after successful calculation
+        if (isFullScreenCamera) {
+          stopCamera()
+        }
       }
       
     } catch (err) {
@@ -182,12 +200,18 @@ const CelestiNavPage: React.FC = () => {
     }
   }
 
+  const handleShutterClick = () => {
+    if (isFullScreenCamera && sensorPermission) {
+      calculatePosition()
+    }
+  }
+
   useEffect(() => {
     if (cameraStream && videoRef.current) {
       videoRef.current.srcObject = cameraStream
       videoRef.current.play().catch((err) => {
         console.error('Error playing video:', err)
-        setError('Failed to start video playback')
+        setError('Failed to start video playbook')
       })
     }
   }, [cameraStream])
@@ -206,8 +230,129 @@ const CelestiNavPage: React.FC = () => {
     }
   }, [mode, isCameraActive])
 
+  // Auto-start camera when switching to solar mode
+  useEffect(() => {
+    if (mode === 'solar' && !isCameraActive) {
+      startCamera()
+    }
+  }, [mode])
+
   const isActive = mode === 'gps' ? gpsPermission : sensorPermission
 
+  // Full-screen camera view
+  if (isFullScreenCamera && mode === 'solar') {
+    return (
+      <div className="fixed inset-0 bg-black z-50 flex flex-col">
+        {/* Camera feed */}
+        <video
+          ref={videoRef}
+          className="flex-1 w-full h-full object-cover"
+          autoPlay
+          playsInline
+          muted
+        />
+        
+        {/* Crosshair overlay */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="relative">
+            {/* Main crosshair circle */}
+            <div className="w-16 h-16 border-2 border-white rounded-full opacity-90 shadow-lg"></div>
+            {/* Horizontal line */}
+            <div className="absolute top-1/2 left-1/2 w-8 h-0.5 bg-white -translate-x-1/2 -translate-y-1/2 shadow-md"></div>
+            {/* Vertical line */}
+            <div className="absolute top-1/2 left-1/2 w-0.5 h-8 bg-white -translate-x-1/2 -translate-y-1/2 shadow-md"></div>
+          </div>
+        </div>
+        
+        {/* Live data overlay */}
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 mt-12 pointer-events-none">
+          <div className="bg-black/60 backdrop-blur-sm rounded-xl px-4 py-2 text-white text-center">
+            <div className="flex gap-6 items-center justify-center text-sm">
+              <div className="flex flex-col items-center">
+                <span className="text-xs text-gray-300 uppercase tracking-wide">PITCH</span>
+                <span className="text-lg font-bold font-mono text-green-400">
+                  {pitch.toFixed(2)}°
+                </span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-xs text-gray-300 uppercase tracking-wide">HEADING</span>
+                <span className="text-lg font-bold font-mono text-green-400">
+                  {heading.toFixed(2)}°
+                </span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-xs text-gray-300 uppercase tracking-wide">TIME</span>
+                <span className="text-sm font-bold font-mono text-orange-400">
+                  {currentTime.toLocaleTimeString([], { hour12: false })}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Controls at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+          <div className="flex items-center justify-between max-w-lg mx-auto">
+            {/* Exit button */}
+            <button 
+              onClick={stopCamera}
+              className="bg-white/20 hover:bg-white/30 text-white rounded-full p-3 backdrop-blur-sm transition-all"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
+            {/* Shutter button */}
+            <button
+              onClick={handleShutterClick}
+              disabled={isCalculating || !sensorPermission}
+              className={`w-20 h-20 rounded-full border-4 border-white transition-all duration-200 ${
+                isCalculating 
+                  ? 'bg-yellow-500' 
+                  : sensorPermission 
+                    ? 'bg-red-500 hover:bg-red-600 active:scale-95' 
+                    : 'bg-gray-500'
+              } disabled:opacity-50`}
+              style={{ 
+                boxShadow: isCalculating ? 'none' : '0 0 20px rgba(239, 68, 68, 0.8)' 
+              }}
+            >
+              {isCalculating && (
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent mx-auto"></div>
+              )}
+            </button>
+            
+            {/* Spacer */}
+            <div className="w-12"></div>
+          </div>
+        </div>
+        
+        {/* Status indicator */}
+        <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm rounded-lg px-3 py-1.5 text-white text-sm">
+          <div className="flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-full ${sensorPermission ? 'bg-green-400' : 'bg-red-400'}`}></span>
+            <span>{sensorPermission ? 'ACTIVE' : 'NO SENSOR'}</span>
+          </div>
+        </div>
+        
+        {/* Error overlay */}
+        {error && (
+          <div className="absolute top-20 left-4 right-4 bg-red-500/90 backdrop-blur-sm rounded-lg p-4 text-white text-center">
+            <p className="text-sm font-medium">{error}</p>
+            <button 
+              onClick={() => setError(null)}
+              className="mt-2 text-xs underline opacity-80"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Regular UI when not in full-screen camera mode
   return (
     <div className="p-4">
       <div className="max-w-md mx-auto space-y-4">
@@ -243,132 +388,50 @@ const CelestiNavPage: React.FC = () => {
           </button>
         </div>
 
-        {/* Main Metric Cards */}
-        {/* Full Screen Camera View for Solar Mode */}
-        {mode === 'solar' && isCameraActive ? (
-          <div className="fixed inset-0 bg-black z-40">
-            <video
-              ref={videoRef}
-              className="w-full h-full object-cover"
-              autoPlay
-              playsInline
-              muted
-            />
-            
-            {/* Crosshair */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="relative">
-                {/* Main crosshair */}
-                <div className="w-12 h-12 border-2 border-accent-primary rounded-full opacity-90"></div>
-                <div className="absolute top-1/2 left-1/2 w-6 h-0.5 bg-accent-primary -translate-x-1/2 -translate-y-1/2"></div>
-                <div className="absolute top-1/2 left-1/2 w-0.5 h-6 bg-accent-primary -translate-x-1/2 -translate-y-1/2"></div>
-                
-                {/* Minimal pitch and azimuth display below crosshair */}
-                <div className="absolute top-8 left-1/2 -translate-x-1/2 text-center text-white">
-                  <div className="bg-black/60 backdrop-blur-sm rounded-lg px-3 py-1.5 text-sm font-medium">
-                    <div className="flex gap-4">
-                      <span>P: {pitch.toFixed(1)}°</span>
-                      <span>A: {heading.toFixed(1)}°</span>
-                    </div>
-                  </div>
+        {/* GPS Mode Content */}
+        {mode === 'gps' && (
+          <div className="info-card animate-fade-in">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-text-primary font-bold text-sm">GPS COORDINATES</h3>
+              <span className={`status-dot ${gpsLocation ? 'status-online' : 'status-offline'}`}></span>
+            </div>
+            {gpsLocation ? (
+              <div className="space-y-2">
+                <div className="text-lg font-bold text-text-primary">
+                  {gpsLocation.lat.toFixed(6)}°
+                </div>
+                <div className="text-lg font-bold text-text-primary">
+                  {gpsLocation.lng.toFixed(6)}°
+                </div>
+                <div className="text-text-secondary text-xs">
+                  Accuracy: ±{gpsLocation.accuracy?.toFixed(0)}m
                 </div>
               </div>
-            </div>
-            
-            {/* Exit camera button */}
-            <button 
-              onClick={stopCamera}
-              className="absolute top-4 right-4 bg-accent-error/80 hover:bg-accent-error text-white rounded-full p-3 backdrop-blur-sm transition-all z-50"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+            ) : gpsLoading ? (
+              <div className="text-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-2 border-accent-primary border-t-transparent mx-auto mb-2"></div>
+                <div className="text-text-secondary text-sm">Getting location...</div>
+              </div>
+            ) : (
+              <div className="text-center py-4">
+                <div className="text-2xl mb-2">📡</div>
+                <div className="text-text-secondary text-sm">No GPS signal</div>
+              </div>
+            )}
           </div>
-        ) : mode === 'solar' ? (
-          <>
-            {/* Solar Mode - Camera Pitch Card */}
-            <div className="info-card text-center animate-fade-in">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-text-primary font-bold text-sm">CAMERA PITCH</h3>
-                <span className={`status-dot ${sensorPermission ? 'status-online' : 'status-offline'}`}></span>
-              </div>
-              <div className="text-4xl font-bold text-text-primary mb-2">
-                {pitch.toFixed(1)}°
-              </div>
-              <div className="text-text-secondary text-sm">
-                {sensorPermission ? 'Active' : 'Permission Required'}
-              </div>
-            </div>
-
-            {/* Azimuth Card */}
-            <div className="info-card text-center animate-fade-in">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-text-primary font-bold text-sm">AZIMUTH</h3>
-                <span className={`status-dot ${sensorPermission ? 'status-online' : 'status-offline'}`}></span>
-              </div>
-              <div className="text-4xl font-bold text-text-primary mb-2">
-                {heading.toFixed(1)}°
-              </div>
-              <div className="text-text-secondary text-sm flex items-center justify-center">
-                <div className="w-8 h-8 border border-text-secondary rounded-full mr-2 relative">
-                  <div 
-                    className="absolute top-0.5 left-1/2 w-0.5 h-3 bg-accent-success transform -translate-x-1/2 origin-bottom"
-                    style={{ transform: `translate(-50%, 0) rotate(${heading}deg)` }}
-                  ></div>
-                </div>
-                {sensorPermission ? 'Active' : 'Inactive'}
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            {/* GPS Coordinates Card */}
-            <div className="info-card animate-fade-in">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-text-primary font-bold text-sm">GPS COORDINATES</h3>
-                <span className={`status-dot ${gpsLocation ? 'status-online' : 'status-offline'}`}></span>
-              </div>
-              {gpsLocation ? (
-                <div className="space-y-2">
-                  <div className="text-lg font-bold text-text-primary">
-                    {gpsLocation.lat.toFixed(6)}°
-                  </div>
-                  <div className="text-lg font-bold text-text-primary">
-                    {gpsLocation.lng.toFixed(6)}°
-                  </div>
-                  <div className="text-text-secondary text-xs">
-                    Accuracy: ±{gpsLocation.accuracy?.toFixed(0)}m
-                  </div>
-                </div>
-              ) : gpsLoading ? (
-                <div className="text-center py-4">
-                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-accent-primary border-t-transparent mx-auto mb-2"></div>
-                  <div className="text-text-secondary text-sm">Getting location...</div>
-                </div>
-              ) : (
-                <div className="text-center py-4">
-                  <div className="text-2xl mb-2">📡</div>
-                  <div className="text-text-secondary text-sm">No GPS signal</div>
-                </div>
-              )}
-            </div>
-          </>
         )}
 
-        {/* Camera Status Card - Only show when not in full screen */}
+        {/* Solar Mode - Start Camera */}
         {mode === 'solar' && !isCameraActive && (
-          <div className="info-card animate-slide-up">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-text-primary font-bold text-sm">CAMERA STATUS</h3>
-              <span className={`status-dot ${isCameraActive ? 'status-online' : 'status-offline'}`}></span>
-            </div>
-            <div className="text-center py-4">
-              <button onClick={startCamera} className="btn-primary w-full text-sm py-2">
-                <span className="mr-2">📷</span>
-                Start Camera
-              </button>
-            </div>
+          <div className="info-card animate-slide-up text-center py-8">
+            <div className="text-4xl mb-4">📷</div>
+            <h3 className="text-text-primary font-bold text-lg mb-2">Camera Required</h3>
+            <p className="text-text-secondary text-sm mb-4">
+              Point your camera at the sun to calculate position
+            </p>
+            <button onClick={startCamera} className="btn-primary">
+              Start Camera View
+            </button>
           </div>
         )}
 
@@ -408,24 +471,26 @@ const CelestiNavPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Calculate Button */}
-        <button 
-          onClick={calculatePosition}
-          disabled={isCalculating || (mode === 'solar' && !sensorPermission)}
-          className="btn-primary w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isCalculating ? (
-            <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-              {mode === 'gps' ? 'Getting Location...' : 'Calculating...'}
-            </div>
-          ) : (
-            <div className="flex items-center justify-center">
-              <span className="mr-2">{mode === 'gps' ? '📍' : '🎯'}</span>
-              {mode === 'gps' ? 'Get GPS Location' : 'Calculate Position'}
-            </div>
-          )}
-        </button>
+        {/* Calculate Button - Only show for GPS mode when not in camera */}
+        {mode === 'gps' && (
+          <button 
+            onClick={calculatePosition}
+            disabled={isCalculating}
+            className="btn-primary w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isCalculating ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Getting Location...
+              </div>
+            ) : (
+              <div className="flex items-center justify-center">
+                <span className="mr-2">📍</span>
+                Get GPS Location
+              </div>
+            )}
+          </button>
+        )}
 
         {/* Results */}
         {lastResult && (
@@ -487,11 +552,10 @@ const CelestiNavPage: React.FC = () => {
         {/* User info footer */}
         <div className="text-center text-text-inverse/50 text-xs pt-2">
           <div className="flex items-center justify-center mb-1">
-            <span className="status-dot status-offline mr-2"></span>
-            <span>Offline Mode</span>
+            <span className="status-dot status-online mr-2"></span>
+            <span>Online</span>
           </div>
           <p>Last updated: {new Date().toLocaleTimeString()}</p>
-          <p>User: user_{Date.now().toString().slice(-6)}</p>
         </div>
       </div>
     </div>
