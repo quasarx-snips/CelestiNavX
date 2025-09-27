@@ -17,6 +17,26 @@ function App() {
   const { error } = useDatabase()
   const { isAuthenticated, isLoading } = useAuth()
 
+  // Handle hash-based navigation
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '') as TabType
+      if (['home', 'celestinav', 'weather', 'radar', 'sos'].includes(hash)) {
+        setActiveTab(hash)
+      }
+    }
+
+    // Set initial tab from hash
+    handleHashChange()
+    
+    // Listen for hash changes
+    window.addEventListener('hashchange', handleHashChange)
+    
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange)
+    }
+  }, [])
+
   useEffect(() => {
     if (error) {
       console.error('Database initialization error:', error)

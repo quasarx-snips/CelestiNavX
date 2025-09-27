@@ -66,7 +66,10 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeTab, onTabCha
           return (
             <button
               key={tab.id}
-              onClick={() => onTabChange(tab.id as TabType)}
+              onClick={() => {
+                window.location.hash = `#${tab.id}`
+                onTabChange(tab.id as TabType)
+              }}
               className={`
                 relative group flex flex-col items-center justify-center
                 min-w-[3.5rem] px-2 py-2 rounded-button

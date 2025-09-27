@@ -52,7 +52,21 @@ const CelestiNavPage: React.FC = () => {
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream
-        await videoRef.current.play()
+        try {
+          await videoRef.current.play()
+        } catch (playError) {
+          console.warn('Video play interrupted, retrying...', playError)
+          // Retry play after a short delay
+          setTimeout(async () => {
+            try {
+              if (videoRef.current && videoRef.current.srcObject) {
+                await videoRef.current.play()
+              }
+            } catch (retryError) {
+              console.error('Video play retry failed:', retryError)
+            }
+          }, 100)
+        }
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Camera access denied'
@@ -137,9 +151,21 @@ const CelestiNavPage: React.FC = () => {
   useEffect(() => {
     if (cameraStream && videoRef.current) {
       videoRef.current.srcObject = cameraStream
-      videoRef.current.play().catch((err) => {
-        console.error('Error playing video:', err)
-      })
+      const playVideo = async () => {
+        try {
+          await videoRef.current?.play()
+        } catch (err) {
+          console.warn('Video play error, retrying...', err)
+          setTimeout(async () => {
+            try {
+              await videoRef.current?.play()
+            } catch (retryErr) {
+              console.error('Video play retry failed:', retryErr)
+            }
+          }, 200)
+        }
+      }
+      playVideo()
     }
   }, [cameraStream])
 
@@ -178,8 +204,8 @@ const CelestiNavPage: React.FC = () => {
         <div className="absolute top-2/3 left-0 right-0 h-0.5 bg-white/30"></div>
       </div>
 
-      {/* Center Crosshair with Circle */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      {/* Center Crosshair with Circle - Fixed positioning */}
+      <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-10">
         <div className="relative">
           {/* Outer circle */}
           <div className="w-16 h-16 border-2 border-yellow-400 rounded-full opacity-90"></div>

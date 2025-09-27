@@ -2,6 +2,20 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import ThemeToggle from '../components/ThemeToggle'
 
+interface NavigationButtonProps {
+  onClick: () => void
+  className: string
+  children: React.ReactNode
+}
+
+const NavigationButton: React.FC<NavigationButtonProps> = ({ onClick, className, children }) => {
+  return (
+    <button onClick={onClick} className={className}>
+      {children}
+    </button>
+  )
+}
+
 const HomePage: React.FC = () => {
   const { user, logout } = useAuth()
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -124,28 +138,40 @@ const HomePage: React.FC = () => {
         </div>
 
         {/* Main Navigation Button */}
-        <button className="btn-primary w-full py-4 text-lg flex items-center justify-center animate-fade-in">
+        <NavigationButton 
+          onClick={() => window.location.hash = '#celestinav'}
+          className="btn-primary w-full py-4 text-lg flex items-center justify-center animate-fade-in"
+        >
           <span className="mr-3 text-xl">🛰️</span>
           Start Celestial Navigation
-        </button>
+        </NavigationButton>
 
         {/* Quick Action Cards */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="gradient-card-pink text-center">
+          <NavigationButton 
+            onClick={() => window.location.hash = '#weather'}
+            className="gradient-card-pink text-center cursor-pointer hover:scale-105 transition-transform"
+          >
             <span className="text-2xl mb-2 block">🌤️</span>
             <span className="text-white text-sm font-semibold">Weather AI</span>
-          </div>
-          <div className="gradient-card-purple text-center">
+          </NavigationButton>
+          <NavigationButton 
+            onClick={() => window.location.hash = '#radar'}
+            className="gradient-card-purple text-center cursor-pointer hover:scale-105 transition-transform"
+          >
             <span className="text-2xl mb-2 block">📡</span>
             <span className="text-white text-sm font-semibold">Cell Radar</span>
-          </div>
+          </NavigationButton>
         </div>
 
         {/* Emergency SOS Button */}
-        <button className="btn-danger w-full py-4 text-lg flex items-center justify-center">
+        <NavigationButton 
+          onClick={() => window.location.hash = '#sos'}
+          className="btn-danger w-full py-4 text-lg flex items-center justify-center"
+        >
           <span className="mr-3 text-xl">⚠️</span>
           EMERGENCY SOS
-        </button>
+        </NavigationButton>
 
         {/* Status Footer */}
         <div className="text-center text-contrast-medium text-xs space-y-1 pt-2">

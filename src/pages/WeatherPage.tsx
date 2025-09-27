@@ -39,7 +39,20 @@ const WeatherPage: React.FC = () => {
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream
-        await videoRef.current.play()
+        try {
+          await videoRef.current.play()
+        } catch (playError) {
+          console.warn('Video play interrupted, retrying...', playError)
+          setTimeout(async () => {
+            try {
+              if (videoRef.current && videoRef.current.srcObject) {
+                await videoRef.current.play()
+              }
+            } catch (retryError) {
+              console.error('Video play retry failed:', retryError)
+            }
+          }, 100)
+        }
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Camera access denied'
