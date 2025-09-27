@@ -1,0 +1,33 @@
+{
+  "name": "celestinav",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "backend": "python main.py"
+  },
+  "keywords": [
+    "navigation",
+    "celestial",
+    "solar",
+    "weather",
+    "emergency"
+  ],
+  "author": "",
+  "license": "ISC",
+  "description": "Offline Survival Navigation System with AI-powered weather analysis",
+  "dependencies": {
+    "@types/react": "^19.1.14",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^5.0.3",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.7"
+  }
+}

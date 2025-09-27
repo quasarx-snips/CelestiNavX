@@ -1,86 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <!-- CRITICAL: Disable zoom for consistent mobile experience -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Astro-Nav: Solar Location Finder</title>
-    <style>
-        /* Base styling for elegance - Dark Theme */
-        html, body {
-            height: 100%; /* Ensure body fills viewport */
-            margin: 0;
-            padding: 0;
-            /* CRITICAL: Disable scrolling on this page */
-            overflow: hidden; 
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            display: flex;
-            flex-direction: column;
-            /* CRITICAL: Center content symmetrically */
-            align-items: center;
-            justify-content: center;
-            background-color: #1a1a2e; /* Deep Navy Background */
-            color: #e9e9f0; 
-            transition: background-color 0.3s;
-        }
-        .container {
-            background-color: #2c3856; /* Slightly lighter card background */
-            padding: 50px 30px;
-            border-radius: 18px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); /* Stronger shadow for depth */
-            text-align: center;
-            width: 90%;
-            max-width: 400px; /* Reduced max-width for better centering on small screens */
-            border: 1px solid #3e4c76;
-            box-sizing: border-box;
-        }
-        h1 {
-            color: #5d9eeb; 
-            font-size: 2.5em;
-            margin-bottom: 5px;
-            font-weight: 800;
-        }
-        p {
-            color: #929ebd; 
-            margin-bottom: 40px;
-            font-size: 1.1em;
-        }
-        .launch-button {
-            padding: 15px 35px;
-            border: none;
-            border-radius: 12px;
-            background-color: #2ecc71; 
-            color: #1a1a2e;
-            font-size: 1.2em;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
-            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
-        }
-        .launch-button:hover {
-            background-color: #27ae60;
-            transform: translateY(-2px);
-            box-shadow: 0 7px 20px rgba(46, 204, 113, 0.6);
-        }
-        .launch-button:active {
-            transform: translateY(0);
-            box-shadow: 0 4px 10px rgba(46, 204, 113, 0.4);
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Astro-Nav</h1>
-        <p>Offline Celestial Navigation System.</p>
-        
-        <button type="button" 
-                onclick="window.location.href='camera.html';" 
-                class="launch-button">
-            Start Solar Location Finder 🛰️
-        </button>
-    </div>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#1a1a2e" />
+    <title>CelestiNav - Offline Survival Navigation System</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
-
