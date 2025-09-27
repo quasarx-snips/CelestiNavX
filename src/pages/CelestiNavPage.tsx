@@ -233,7 +233,7 @@ const CelestiNavPage: React.FC = () => {
       )}
 
       {/* Shutter Button - Above Bottom Navigation */}
-      <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-20">
+      <div className="absolute bottom-32 left-1/2 -translate-x-1/2 z-20">
         <button
           onClick={captureReading}
           disabled={isCalculating || !sensorPermission}
