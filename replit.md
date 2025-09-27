@@ -8,6 +8,16 @@ CelestiNav is an offline survival navigation system that combines solar position
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes (September 2025)
+
+### Complete Mobile App Theme Transformation
+- **Updated Visual Theme**: Transformed from dark desktop-focused interface to modern mobile app design
+- **New Color Palette**: Implemented purple/blue gradient backgrounds with colorful accent cards (blue, purple, pink gradients)  
+- **Mobile-Optimized UI**: Updated all pages with gradient cards, modern buttons, and vibrant mobile app styling
+- **Improved Accessibility**: Fixed text contrast issues and implemented proper dark/light text combinations
+- **Pages Updated**: HomePage, CelestiNavPage, WeatherPage, RadarPage, SOSPage, LandingPage all redesigned
+- **Component Updates**: BottomNavigation redesigned with modern mobile styling and proper theming
+
 ## System Architecture
 
 ### Frontend Architecture
