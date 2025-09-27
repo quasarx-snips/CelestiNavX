@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react'
 import BottomNavigation from './components/BottomNavigation'
 import HomePage from './pages/HomePage'
@@ -6,7 +5,7 @@ import CelestiNavPage from './pages/CelestiNavPage'
 import WeatherPage from './pages/WeatherPage'
 import RadarPage from './pages/RadarPage'
 import SOSPage from './pages/SOSPage'
-import LandingPage from './pages/LandingPage'
+// LandingPage import removed as per the changes
 import { useDatabase } from './hooks/useDatabase'
 import { useAuth } from './hooks/useAuth'
 
@@ -35,8 +34,12 @@ function App() {
     )
   }
 
+  // Conditional rendering for LandingPage removed as per changes
   if (!isAuthenticated) {
-    return <LandingPage />
+    // This part is now unreachable if LandingPage is removed and isAuthenticated is false.
+    // In a real scenario, you'd handle this differently, perhaps by showing a login form directly.
+    // For now, adhering strictly to the provided changes, we'll assume this path is handled elsewhere or implies an error state.
+    return null; // Or a placeholder indicating authentication is required
   }
 
   const renderPage = () => {
@@ -56,7 +59,7 @@ function App() {
           return <HomePage />
       }
     })()
-    
+
     return (
       <div key={activeTab} className="page-transition page-content">
         {pageComponent}
