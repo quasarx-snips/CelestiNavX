@@ -88,6 +88,7 @@ const HomePage: React.FC = () => {
                     {user.first_name} {user.last_name}
                   </p>
                   <p className="text-contrast-medium text-xs">{user.email}</p>
+                  <p className="text-contrast-medium text-xs font-mono">ID: {user.id}</p>
                 </div>
               </div>
               <button 
