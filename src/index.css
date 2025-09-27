@@ -18,6 +18,8 @@ html, body {
   color: #e9e9f0;
   overflow-x: hidden;
   overscroll-behavior: contain;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #root {
@@ -49,4 +51,101 @@ html, body {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+}
+
+/* Modern card component styles */
+@layer components {
+  .card {
+    @apply bg-primary-600 rounded-card border border-primary-500/30 shadow-card transition-all duration-200;
+  }
+  
+  .card-hover {
+    @apply hover:shadow-card-hover hover:-translate-y-0.5 hover:border-primary-400/40;
+  }
+  
+  .card-active {
+    @apply active:shadow-card-active active:translate-y-0;
+  }
+  
+  /* Modern button styles */
+  .btn-primary {
+    @apply bg-accent-blue hover:bg-blue-600 active:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md active:shadow-sm active:scale-95;
+  }
+  
+  .btn-secondary {
+    @apply bg-primary-600 hover:bg-primary-500 text-text-primary border border-primary-400/30 hover:border-primary-300/50 font-medium py-3 px-6 rounded-lg transition-all duration-200 shadow-sm;
+  }
+  
+  .btn-danger {
+    @apply bg-accent-red hover:bg-red-600 active:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md active:shadow-sm active:scale-95;
+  }
+  
+  /* Status indicators */
+  .status-dot {
+    @apply w-2.5 h-2.5 rounded-full inline-block;
+  }
+  
+  .status-online {
+    @apply bg-accent-green shadow-sm;
+  }
+  
+  .status-offline {
+    @apply bg-accent-orange shadow-sm;
+  }
+  
+  .status-error {
+    @apply bg-accent-red shadow-sm;
+  }
+  
+  .status-warning {
+    @apply bg-accent-yellow shadow-sm;
+  }
+  
+  /* Toggle switches */
+  .toggle-group {
+    @apply flex bg-primary-700 rounded-lg p-1 gap-1;
+  }
+  
+  .toggle-option {
+    @apply flex-1 py-2 px-4 rounded-md text-center text-sm font-medium transition-all duration-200 cursor-pointer;
+  }
+  
+  .toggle-active {
+    @apply bg-accent-blue text-white shadow-sm;
+  }
+  
+  .toggle-inactive {
+    @apply text-text-secondary hover:text-text-primary hover:bg-primary-600;
+  }
+  
+  /* Enhanced card layouts */
+  .metric-card {
+    @apply card p-4 text-center;
+  }
+  
+  .info-card {
+    @apply card p-5;
+  }
+  
+  .action-card {
+    @apply card card-hover card-active p-4 cursor-pointer;
+  }
+}
+
+/* Enhanced scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Improved focus states */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #4a90e2;
+  outline-offset: 2px;
+}
+
+/* Smooth transitions for page changes */
+.page-transition {
+  animation: fadeIn 0.3s ease-in-out;
 }

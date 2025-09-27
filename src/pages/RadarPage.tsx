@@ -2,19 +2,27 @@ import React from 'react'
 
 const RadarPage: React.FC = () => {
   return (
-    <div className="min-h-full bg-primary-800 p-4">
-      <div className="max-w-md mx-auto">
+    <div className="min-h-screen bg-primary-800 p-4 page-transition">
+      <div className="max-w-md mx-auto space-y-4">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-xl font-bold flex items-center mb-2">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold text-text-primary flex items-center">
             <span className="mr-2">📡</span>
             Radar & Signals
           </h1>
-          <p className="text-text-secondary text-sm">Detection and signal analysis</p>
+          <div className="flex items-center">
+            <span className="text-text-secondary text-sm mr-2">Scanning</span>
+            <span className="status-dot status-online animate-pulse"></span>
+          </div>
         </div>
 
-        {/* Radar Display */}
-        <div className="bg-primary-900 rounded-lg p-6 mb-6 border border-accent-green">
+        {/* Radar Display Card */}
+        <div className="info-card bg-primary-900/50 border-accent-green/30 animate-fade-in">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-text-primary font-bold text-sm">RADAR DISPLAY</h3>
+            <span className="status-dot status-online"></span>
+          </div>
+          
           <div className="relative w-full aspect-square max-w-xs mx-auto">
             {/* Radar Background */}
             <div className="absolute inset-0 border-2 border-accent-green rounded-full opacity-30"></div>
@@ -31,38 +39,53 @@ const RadarPage: React.FC = () => {
             {/* Sweep Animation */}
             <div className="absolute top-1/2 left-1/2 w-full h-px bg-gradient-to-r from-accent-green to-transparent transform -translate-y-1/2 origin-left rotate-45 animate-pulse"></div>
           </div>
-          <p className="text-center text-accent-green text-sm mt-4">Scanning...</p>
+          <p className="text-center text-accent-green text-sm mt-4 font-semibold">Scanning...</p>
         </div>
 
-        {/* Signal Strength */}
-        <div className="bg-primary-600 rounded-lg p-4 mb-6 border border-primary-500">
-          <h3 className="text-text-primary font-semibold mb-4 flex items-center">
-            <span className="mr-2">📶</span>
-            Signal Detection
-          </h3>
+        {/* Signal Detection Card */}
+        <div className="info-card animate-slide-up">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-text-primary font-bold text-sm flex items-center">
+              <span className="mr-2">📶</span>
+              Signal Detection
+            </h3>
+            <span className="status-dot status-online"></span>
+          </div>
+          
           <div className="space-y-4">
             <div>
-              <div className="flex justify-between mb-2">
+              <div className="flex justify-between items-center mb-2">
                 <span className="text-text-secondary text-sm">Cellular Signal</span>
-                <span className="text-accent-red text-sm font-medium">No Signal</span>
+                <div className="flex items-center">
+                  <span className="status-dot status-error mr-2"></span>
+                  <span className="text-accent-red text-sm font-semibold">No Signal</span>
+                </div>
               </div>
               <div className="w-full bg-primary-700 rounded-full h-2">
                 <div className="bg-accent-red h-2 rounded-full w-0"></div>
               </div>
             </div>
+            
             <div>
-              <div className="flex justify-between mb-2">
+              <div className="flex justify-between items-center mb-2">
                 <span className="text-text-secondary text-sm">WiFi Networks</span>
-                <span className="text-accent-yellow text-sm font-medium">2 Found</span>
+                <div className="flex items-center">
+                  <span className="status-dot status-warning mr-2"></span>
+                  <span className="text-accent-yellow text-sm font-semibold">2 Found</span>
+                </div>
               </div>
               <div className="w-full bg-primary-700 rounded-full h-2">
                 <div className="bg-accent-yellow h-2 rounded-full w-1/3"></div>
               </div>
             </div>
+            
             <div>
-              <div className="flex justify-between mb-2">
+              <div className="flex justify-between items-center mb-2">
                 <span className="text-text-secondary text-sm">Bluetooth Devices</span>
-                <span className="text-accent-green text-sm font-medium">5 Detected</span>
+                <div className="flex items-center">
+                  <span className="status-dot status-online mr-2"></span>
+                  <span className="text-accent-green text-sm font-semibold">5 Detected</span>
+                </div>
               </div>
               <div className="w-full bg-primary-700 rounded-full h-2">
                 <div className="bg-accent-green h-2 rounded-full w-2/3"></div>
@@ -71,42 +94,55 @@ const RadarPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Emergency Frequencies */}
-        <div className="bg-primary-600 rounded-lg p-4 mb-6 border border-primary-500">
-          <h3 className="text-text-primary font-semibold mb-4 flex items-center">
-            <span className="mr-2">📻</span>
-            Emergency Frequencies
-          </h3>
+        {/* Emergency Frequencies Card */}
+        <div className="info-card animate-slide-up">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-text-primary font-bold text-sm flex items-center">
+              <span className="mr-2">📻</span>
+              Emergency Frequencies
+            </h3>
+            <span className="status-dot status-online"></span>
+          </div>
+          
           <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-text-secondary">Emergency Services</span>
-              <span className="text-text-primary font-mono">121.5 MHz</span>
+            <div className="flex justify-between items-center py-1">
+              <span className="text-text-secondary text-sm">Emergency Services</span>
+              <span className="text-text-primary font-mono font-semibold text-sm">121.5 MHz</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-text-secondary">Maritime Emergency</span>
-              <span className="text-text-primary font-mono">156.8 MHz</span>
+            <div className="flex justify-between items-center py-1">
+              <span className="text-text-secondary text-sm">Maritime Emergency</span>
+              <span className="text-text-primary font-mono font-semibold text-sm">156.8 MHz</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-text-secondary">Aircraft Emergency</span>
-              <span className="text-text-primary font-mono">243.0 MHz</span>
+            <div className="flex justify-between items-center py-1">
+              <span className="text-text-secondary text-sm">Aircraft Emergency</span>
+              <span className="text-text-primary font-mono font-semibold text-sm">243.0 MHz</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-text-secondary">Weather Radio</span>
-              <span className="text-text-primary font-mono">162.55 MHz</span>
+            <div className="flex justify-between items-center py-1">
+              <span className="text-text-secondary text-sm">Weather Radio</span>
+              <span className="text-text-primary font-mono font-semibold text-sm">162.55 MHz</span>
             </div>
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="space-y-3">
-          <button className="w-full bg-accent-blue text-white py-3 rounded-lg font-semibold flex items-center justify-center">
+        {/* Action Buttons */}
+        <div className="space-y-3 animate-fade-in">
+          <button className="btn-primary w-full py-3">
             <span className="mr-2">🔍</span>
             Start Deep Scan
           </button>
-          <button className="w-full bg-primary-600 text-text-primary py-3 rounded-lg font-medium border border-primary-500 flex items-center justify-center">
+          <button className="btn-secondary w-full py-3">
             <span className="mr-2">📋</span>
             View Scan History
           </button>
+        </div>
+
+        {/* Status Footer */}
+        <div className="text-center text-text-muted text-xs pt-2">
+          <div className="flex items-center justify-center mb-1">
+            <span className="status-dot status-online mr-2"></span>
+            <span>Radar active • All frequencies monitored</span>
+          </div>
+          <p>Last scan: {new Date().toLocaleTimeString()}</p>
         </div>
       </div>
     </div>

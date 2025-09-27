@@ -30,7 +30,31 @@ export default {
           secondary: '#929ebd',
           muted: '#6b7280'
         }
-      }
+      },
+      boxShadow: {
+        'card': '0 2px 8px rgba(0, 0, 0, 0.15), 0 0 1px rgba(255, 255, 255, 0.05)',
+        'card-hover': '0 4px 16px rgba(0, 0, 0, 0.2), 0 0 1px rgba(255, 255, 255, 0.1)',
+        'card-active': '0 1px 4px rgba(0, 0, 0, 0.2)',
+      },
+      animation: {
+        'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'fade-in': 'fadeIn 0.3s ease-in-out',
+        'slide-up': 'slideUp 0.3s ease-out',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        slideUp: {
+          '0%': { transform: 'translateY(20px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+      },
+      borderRadius: {
+        'card': '12px',
+        'card-lg': '16px',
+      },
     },
   },
   plugins: [],

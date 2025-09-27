@@ -13,7 +13,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeTab, onTabCha
       id: 'home', 
       label: 'Home', 
       icon: (
-        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
           <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
         </svg>
       )
@@ -22,7 +22,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeTab, onTabCha
       id: 'celestinav', 
       label: 'CelestiNav', 
       icon: (
-        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1L13.5 2.5L16.17 5.17L10.5 10.84C10.1 11.24 10.1 11.86 10.5 12.25L11.75 13.5C12.14 13.89 12.76 13.89 13.15 13.5L18.83 7.83L21.5 10.5L23 9H21Z"/>
         </svg>
       )
@@ -31,7 +31,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeTab, onTabCha
       id: 'weather', 
       label: 'Weather', 
       icon: (
-        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
           <path d="M6.5 12C6.5 10.61 7.61 9.5 9 9.5C10.39 9.5 11.5 10.61 11.5 12C11.5 13.39 10.39 14.5 9 14.5C7.61 14.5 6.5 13.39 6.5 12ZM12 6.5C13.25 6.5 14.45 7 15.35 7.9C16.25 8.8 16.75 10 16.75 11.25C16.75 12.5 16.25 13.7 15.35 14.6C14.45 15.5 13.25 16 12 16C10.75 16 9.55 15.5 8.65 14.6C7.75 13.7 7.25 12.5 7.25 11.25C7.25 10 7.75 8.8 8.65 7.9C9.55 7 10.75 6.5 12 6.5Z"/>
         </svg>
       )
@@ -40,7 +40,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeTab, onTabCha
       id: 'radar', 
       label: 'Radar', 
       icon: (
-        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20ZM12 6C8.69 6 6 8.69 6 12C6 15.31 8.69 18 12 18C15.31 18 18 15.31 18 12C18 8.69 15.31 6 12 6ZM12 16C9.79 16 8 14.21 8 12C8 9.79 9.79 8 12 8C14.21 8 16 9.79 16 12C16 14.21 14.21 16 12 16Z"/>
         </svg>
       )
@@ -49,7 +49,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeTab, onTabCha
       id: 'sos', 
       label: 'SOS', 
       icon: (
-        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
           <path d="M1 21H4L2.5 19.5L1 21ZM11 8H13V16H11V8ZM12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20ZM11 6H13V10H11V6Z"/>
         </svg>
       )
@@ -57,34 +57,80 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeTab, onTabCha
   ] as const
 
   return (
-    <nav className="bg-primary-900/95 backdrop-blur-sm border-t border-primary-600/50 px-1 py-2">
-      <div className="flex justify-around items-center max-w-lg mx-auto">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => onTabChange(tab.id as TabType)}
-            className={`flex flex-col items-center px-4 py-2 rounded-lg min-w-[4rem] transition-all duration-200 ${
-              activeTab === tab.id
-                ? 'text-accent-blue bg-accent-blue/10 border border-accent-blue/30 shadow-lg scale-105'
-                : 'text-text-secondary hover:text-text-primary hover:bg-primary-700/50'
-            }`}
-          >
-            <div className={`mb-1 transition-transform duration-200 ${
-              activeTab === tab.id ? 'scale-110' : ''
-            }`}>
-              {tab.icon}
-            </div>
-            <span className={`text-xs font-medium transition-all duration-200 ${
-              activeTab === tab.id ? 'font-semibold' : ''
-            }`}>
-              {tab.label}
-            </span>
-            {activeTab === tab.id && (
-              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-accent-blue rounded-full"></div>
-            )}
-          </button>
-        ))}
+    <nav className="bg-primary-900/98 backdrop-blur-md border-t border-primary-600/30 shadow-lg">
+      <div className="flex justify-around items-center max-w-lg mx-auto px-2 py-1">
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.id
+          const isEmergency = tab.id === 'sos'
+          
+          return (
+            <button
+              key={tab.id}
+              onClick={() => onTabChange(tab.id as TabType)}
+              className={`
+                relative flex flex-col items-center justify-center
+                min-w-[4rem] px-3 py-2 rounded-card
+                transition-all duration-300 ease-out
+                transform active:scale-95
+                ${isActive 
+                  ? 'text-accent-blue bg-accent-blue/15 shadow-md scale-105' 
+                  : isEmergency
+                    ? 'text-accent-red hover:text-red-400 hover:bg-accent-red/10'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-primary-700/60'
+                }
+                ${isActive ? 'shadow-card' : 'hover:shadow-sm'}
+              `}
+              aria-label={tab.label}
+              role="tab"
+              aria-selected={isActive}
+            >
+              {/* Icon with enhanced animation */}
+              <div className={`
+                mb-1 transition-all duration-300 ease-out
+                ${isActive ? 'scale-110 -translate-y-0.5' : 'scale-100'}
+                ${isEmergency && !isActive ? 'animate-pulse-slow' : ''}
+              `}>
+                {tab.icon}
+              </div>
+              
+              {/* Label with better typography */}
+              <span className={`
+                text-xs transition-all duration-300 ease-out
+                ${isActive 
+                  ? 'font-bold opacity-100' 
+                  : 'font-medium opacity-80'
+                }
+              `}>
+                {tab.label}
+              </span>
+              
+              {/* Enhanced active indicator */}
+              {isActive && (
+                <>
+                  {/* Bottom indicator bar */}
+                  <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-6 h-0.5 bg-accent-blue rounded-full shadow-sm animate-fade-in" />
+                  
+                  {/* Subtle glow effect */}
+                  <div className="absolute inset-0 bg-accent-blue/5 rounded-card animate-fade-in" />
+                </>
+              )}
+              
+              {/* Hover indicator for inactive tabs */}
+              {!isActive && (
+                <div className="absolute inset-0 bg-transparent rounded-card transition-all duration-200 hover:bg-primary-600/20" />
+              )}
+              
+              {/* Emergency pulse indicator */}
+              {isEmergency && !isActive && (
+                <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-accent-red rounded-full animate-pulse opacity-60" />
+              )}
+            </button>
+          )
+        })}
       </div>
+      
+      {/* Bottom safe area for mobile devices */}
+      <div className="h-safe-area-inset-bottom bg-primary-900/50" />
     </nav>
   )
 }

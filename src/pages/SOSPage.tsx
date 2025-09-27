@@ -14,26 +14,33 @@ const SOSPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-full bg-primary-800 p-4">
-      <div className="max-w-md mx-auto">
+    <div className="min-h-screen bg-primary-800 p-4 page-transition">
+      <div className="max-w-md mx-auto space-y-4">
         {/* Header */}
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold flex items-center justify-center mb-2">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold text-text-primary flex items-center">
             <span className="mr-2">⚠️</span>
             Emergency SOS
           </h1>
-          <p className="text-text-secondary">Critical situation assistance</p>
+          <div className="flex items-center">
+            <span className="text-text-secondary text-sm mr-2">
+              {isEmergencyActive ? 'ACTIVE' : 'Standby'}
+            </span>
+            <span className={`status-dot ${isEmergencyActive ? 'status-error animate-pulse' : 'status-offline'}`}></span>
+          </div>
         </div>
 
         {/* Emergency Status */}
         {isEmergencyActive && (
-          <div className="bg-accent-red rounded-lg p-4 mb-6 border-2 border-red-400 animate-pulse">
+          <div className="info-card bg-accent-red/20 border-accent-red animate-pulse">
             <div className="text-center">
-              <h2 className="text-white font-bold text-lg mb-2">🚨 EMERGENCY ACTIVE 🚨</h2>
-              <p className="text-red-100 text-sm mb-4">Emergency signal is being broadcast</p>
+              <h2 className="text-accent-red font-bold text-lg mb-2 flex items-center justify-center">
+                🚨 EMERGENCY ACTIVE 🚨
+              </h2>
+              <p className="text-accent-red text-sm mb-4">Emergency signal is being broadcast</p>
               <button 
                 onClick={deactivateEmergency}
-                className="bg-white text-accent-red px-6 py-2 rounded-lg font-semibold"
+                className="btn-secondary bg-white text-accent-red py-2 px-6"
               >
                 Cancel Emergency
               </button>
@@ -41,104 +48,138 @@ const SOSPage: React.FC = () => {
           </div>
         )}
 
-        {/* Emergency Actions */}
+        {/* Emergency Action Button */}
         {!isEmergencyActive && (
-          <div className="space-y-4 mb-6">
+          <div className="animate-fade-in">
             <button 
               onClick={activateEmergency}
-              className="w-full bg-accent-red text-white py-6 rounded-lg font-bold text-xl flex items-center justify-center border-2 border-red-400"
+              className="w-full bg-accent-red hover:bg-red-600 active:bg-red-700 text-white py-6 rounded-card font-bold text-xl flex items-center justify-center border-2 border-red-400 shadow-card hover:shadow-card-hover active:shadow-card-active transition-all duration-200 active:scale-95"
             >
               <span className="mr-3 text-2xl">🆘</span>
               ACTIVATE EMERGENCY SOS
             </button>
             
-            <div className="bg-primary-600 rounded-lg p-4 border border-primary-500">
-              <h3 className="text-accent-red font-semibold mb-2">⚠️ Emergency Mode</h3>
+            <div className="info-card bg-accent-red/10 border-accent-red/30 mt-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-accent-red font-bold text-sm">⚠️ Emergency Mode</h3>
+                <span className="status-dot status-warning"></span>
+              </div>
               <p className="text-text-secondary text-sm">
-                This will activate all available emergency protocols including:
-                signal broadcasting, location sharing, and emergency frequency transmission.
+                This will activate all available emergency protocols including signal broadcasting, 
+                location sharing, and emergency frequency transmission.
               </p>
             </div>
           </div>
         )}
 
-        {/* Current Location */}
-        <div className="bg-primary-600 rounded-lg p-4 mb-6 border border-primary-500">
-          <h3 className="text-text-primary font-semibold mb-4 flex items-center">
-            <span className="mr-2">📍</span>
-            Current Location
-          </h3>
+        {/* Current Location Card */}
+        <div className="info-card animate-slide-up">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-text-primary font-bold text-sm flex items-center">
+              <span className="mr-2">📍</span>
+              Current Location
+            </h3>
+            <span className={`status-dot ${location ? 'status-online' : 'status-offline'}`}></span>
+          </div>
+          
           {location ? (
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-text-secondary">Latitude</span>
-                <span className="text-text-primary font-mono">{location.lat.toFixed(6)}°</span>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center py-1">
+                <span className="text-text-secondary text-sm">Latitude</span>
+                <span className="text-text-primary font-mono font-semibold text-sm">{location.lat.toFixed(6)}°</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-text-secondary">Longitude</span>
-                <span className="text-text-primary font-mono">{location.lng.toFixed(6)}°</span>
+              <div className="flex justify-between items-center py-1">
+                <span className="text-text-secondary text-sm">Longitude</span>
+                <span className="text-text-primary font-mono font-semibold text-sm">{location.lng.toFixed(6)}°</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-text-secondary">Accuracy</span>
-                <span className="text-accent-green font-medium">High</span>
+              <div className="flex justify-between items-center py-1">
+                <span className="text-text-secondary text-sm">Accuracy</span>
+                <div className="flex items-center">
+                  <span className="status-dot status-online mr-2"></span>
+                  <span className="text-accent-green font-semibold text-sm">High</span>
+                </div>
               </div>
             </div>
           ) : (
             <div className="text-center py-4">
-              <p className="text-text-secondary mb-3">Location not available</p>
-              <button className="bg-accent-blue text-white px-4 py-2 rounded-lg text-sm">
+              <div className="text-2xl mb-2">📍</div>
+              <p className="text-text-secondary mb-3 text-sm">Location not available</p>
+              <button className="btn-primary text-sm py-2 px-4">
                 Get Location
               </button>
             </div>
           )}
         </div>
 
-        {/* Emergency Contacts */}
-        <div className="bg-primary-600 rounded-lg p-4 mb-6 border border-primary-500">
-          <h3 className="text-text-primary font-semibold mb-4 flex items-center">
-            <span className="mr-2">📞</span>
-            Emergency Contacts
-          </h3>
+        {/* Emergency Contacts Card */}
+        <div className="info-card animate-slide-up">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-text-primary font-bold text-sm flex items-center">
+              <span className="mr-2">📞</span>
+              Emergency Contacts
+            </h3>
+            <span className="status-dot status-online"></span>
+          </div>
+          
           <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-text-secondary">Emergency Services</span>
-              <button className="text-accent-blue font-medium">Call 911</button>
+            <div className="flex justify-between items-center py-1">
+              <span className="text-text-secondary text-sm">Emergency Services</span>
+              <button className="text-accent-blue font-semibold text-sm hover:text-blue-400 transition-colors">
+                Call 911
+              </button>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-text-secondary">Coast Guard</span>
-              <button className="text-accent-blue font-medium">Call</button>
+            <div className="flex justify-between items-center py-1">
+              <span className="text-text-secondary text-sm">Coast Guard</span>
+              <button className="text-accent-blue font-semibold text-sm hover:text-blue-400 transition-colors">
+                Call
+              </button>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-text-secondary">Mountain Rescue</span>
-              <button className="text-accent-blue font-medium">Call</button>
+            <div className="flex justify-between items-center py-1">
+              <span className="text-text-secondary text-sm">Mountain Rescue</span>
+              <button className="text-accent-blue font-semibold text-sm hover:text-blue-400 transition-colors">
+                Call
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Survival Information */}
-        <div className="bg-primary-600 rounded-lg p-4 border border-primary-500">
-          <h3 className="text-text-primary font-semibold mb-4 flex items-center">
-            <span className="mr-2">📋</span>
-            Survival Checklist
-          </h3>
-          <div className="space-y-2 text-sm">
-            <div className="flex items-center">
-              <span className="mr-2">☑️</span>
-              <span className="text-text-secondary">Find shelter and stay warm</span>
+        {/* Survival Checklist Card */}
+        <div className="info-card animate-slide-up">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-text-primary font-bold text-sm flex items-center">
+              <span className="mr-2">📋</span>
+              Survival Checklist
+            </h3>
+            <span className="status-dot status-online"></span>
+          </div>
+          
+          <div className="space-y-2">
+            <div className="flex items-center py-1">
+              <span className="mr-3 text-accent-green">☑️</span>
+              <span className="text-text-secondary text-sm">Find shelter and stay warm</span>
             </div>
-            <div className="flex items-center">
-              <span className="mr-2">☑️</span>
-              <span className="text-text-secondary">Conserve water and energy</span>
+            <div className="flex items-center py-1">
+              <span className="mr-3 text-accent-green">☑️</span>
+              <span className="text-text-secondary text-sm">Conserve water and energy</span>
             </div>
-            <div className="flex items-center">
-              <span className="mr-2">☑️</span>
-              <span className="text-text-secondary">Make yourself visible to rescuers</span>
+            <div className="flex items-center py-1">
+              <span className="mr-3 text-accent-green">☑️</span>
+              <span className="text-text-secondary text-sm">Make yourself visible to rescuers</span>
             </div>
-            <div className="flex items-center">
-              <span className="mr-2">☑️</span>
-              <span className="text-text-secondary">Stay in one location if possible</span>
+            <div className="flex items-center py-1">
+              <span className="mr-3 text-accent-green">☑️</span>
+              <span className="text-text-secondary text-sm">Stay in one location if possible</span>
             </div>
           </div>
+        </div>
+
+        {/* Status Footer */}
+        <div className="text-center text-text-muted text-xs pt-2">
+          <div className="flex items-center justify-center mb-1">
+            <span className={`status-dot ${isEmergencyActive ? 'status-error' : 'status-online'} mr-2`}></span>
+            <span>{isEmergencyActive ? 'Emergency broadcast active' : 'System ready • Emergency protocols standby'}</span>
+          </div>
+          <p>Last check: {new Date().toLocaleTimeString()}</p>
         </div>
       </div>
     </div>
