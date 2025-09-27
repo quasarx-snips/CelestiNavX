@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 
 const WeatherPage: React.FC = () => {
-  const [currentStep, setCurrentStep] = useState(1)
+  const [currentStep] = useState(1)
   const [capturedDirections, setCapturedDirections] = useState<string[]>([])
   const [isAnalyzing, setIsAnalyzing] = useState(false)
 

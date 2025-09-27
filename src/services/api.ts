@@ -199,7 +199,7 @@ class APIService {
     }
   }
 
-  async analyzeWeather(data: WeatherAnalysisRequest): Promise<WeatherAnalysisResponse> {
+  async analyzeWeather(_data: WeatherAnalysisRequest): Promise<WeatherAnalysisResponse> {
     try {
       // For now, return mock data since we haven't implemented the weather AI yet
       // This will be replaced with actual ML model integration

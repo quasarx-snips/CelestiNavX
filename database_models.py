@@ -90,8 +90,8 @@ class UserSession(db.Model):
                 'accuracy': self.location_accuracy
             } if self.location_lat and self.location_lng else None,
             'deviceInfo': json.loads(self.device_info) if self.device_info else {},
-            'measurementCount': len(self.measurements),
-            'weatherReadingCount': len(self.weather_readings)
+            'measurementCount': db.session.query(Measurement).filter_by(session_id=self.id).count(),
+            'weatherReadingCount': db.session.query(WeatherReading).filter_by(session_id=self.id).count()
         }
 
 class AppStats(db.Model):

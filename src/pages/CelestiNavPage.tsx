@@ -9,13 +9,12 @@ const CelestiNavPage: React.FC = () => {
   const [elevation, setElevation] = useState(0)
   const [pressure, setPressure] = useState(1013.25)
   const [temperature, setTemperature] = useState(15)
-  const [isCapturing, setIsCapturing] = useState(false)
   const [isCalculating, setIsCalculating] = useState(false)
   const [lastResult, setLastResult] = useState<{ lat: number; lng: number } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [sensorPermission, setSensorPermission] = useState(false)
 
-  const { measurements, saveMeasurement } = useMeasurements()
+  const { measurements } = useMeasurements()
 
   // Device orientation sensor handling
   useEffect(() => {
@@ -25,8 +24,8 @@ const CelestiNavPage: React.FC = () => {
         setPitch(event.beta - 90)
         
         // Handle compass heading
-        if (event.webkitCompassHeading !== undefined) {
-          setHeading(event.webkitCompassHeading)
+        if ((event as any).webkitCompassHeading !== undefined) {
+          setHeading((event as any).webkitCompassHeading)
         } else if (event.alpha !== null) {
           setHeading(360 - event.alpha)
         }

@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 
 const SOSPage: React.FC = () => {
   const [isEmergencyActive, setIsEmergencyActive] = useState(false)
-  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null)
+  const [location] = useState<{ lat: number; lng: number } | null>(null)
 
   const activateEmergency = () => {
     setIsEmergencyActive(true)
