@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useMeasurements } from '../hooks/useDatabase'
 import { apiService } from '../services/api'
 
@@ -16,8 +16,48 @@ const CelestiNavPage: React.FC = () => {
   const [gpsLocation, setGpsLocation] = useState<{ lat: number; lng: number; accuracy?: number } | null>(null)
   const [gpsLoading, setGpsLoading] = useState(false)
   const [gpsPermission, setGpsPermission] = useState(false)
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
+  const [isCameraActive, setIsCameraActive] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
 
   const { measurements } = useMeasurements()
+
+  // Camera functionality
+  const startCamera = async () => {
+    try {
+      setError(null)
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { 
+          facingMode: 'environment', // Use back camera if available
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
+      })
+      
+      setCameraStream(stream)
+      setIsCameraActive(true)
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream
+        videoRef.current.play()
+      }
+    } catch (err) {
+      setError('Camera access denied. Please allow camera permissions for sun alignment.')
+      console.error('Camera error:', err)
+    }
+  }
+
+  const stopCamera = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop())
+      setCameraStream(null)
+      setIsCameraActive(false)
+    }
+    // Clear video element's srcObject
+    if (videoRef.current) {
+      videoRef.current.srcObject = null
+    }
+  }
 
   // GPS functionality
   const getGPSLocation = async () => {
@@ -163,10 +203,37 @@ const CelestiNavPage: React.FC = () => {
     }
   }
 
+  // Effect to assign camera stream to video element when both become available
+  useEffect(() => {
+    if (cameraStream && videoRef.current) {
+      videoRef.current.srcObject = cameraStream
+      videoRef.current.play().catch((err) => {
+        console.error('Error playing video:', err)
+        setError('Failed to start video playback')
+      })
+    }
+  }, [cameraStream])
+
   // Effect to detect environmental conditions when elevation changes
   useEffect(() => {
     detectEnvironmental()
   }, [elevation])
+
+  // Effect to cleanup camera when component unmounts or mode changes
+  useEffect(() => {
+    return () => {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop())
+      }
+    }
+  }, [cameraStream])
+
+  // Effect to stop camera when switching away from solar mode
+  useEffect(() => {
+    if (mode !== 'solar' && isCameraActive) {
+      stopCamera()
+    }
+  }, [mode, isCameraActive])
 
   return (
     <div className="min-h-full bg-primary-800 p-4">
@@ -217,21 +284,55 @@ const CelestiNavPage: React.FC = () => {
         <div className="relative bg-black rounded-lg overflow-hidden mb-6" style={{ aspectRatio: '4/3' }}>
           {mode === 'solar' ? (
             <>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-text-secondary text-center">
-                  <p className="mb-2">📷</p>
-                  <p className="text-sm">Align sun with center circle</p>
-                </div>
-              </div>
-              {/* Crosshairs */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="relative">
-                  <div className="w-16 h-16 border-2 border-accent-green rounded-full"></div>
-                  <div className="absolute top-1/2 left-1/2 w-1 h-16 bg-accent-green transform -translate-x-1/2 -translate-y-1/2"></div>
-                  <div className="absolute top-1/2 left-1/2 w-16 h-1 bg-accent-green transform -translate-x-1/2 -translate-y-1/2"></div>
-                  <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-accent-green rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
-                </div>
-              </div>
+              {isCameraActive && cameraStream ? (
+                <>
+                  <video
+                    ref={videoRef}
+                    className="w-full h-full object-cover"
+                    autoPlay
+                    playsInline
+                    muted
+                  />
+                  {/* Crosshairs Overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="relative">
+                      <div className="w-16 h-16 border-2 border-accent-green rounded-full"></div>
+                      <div className="absolute top-1/2 left-1/2 w-1 h-16 bg-accent-green transform -translate-x-1/2 -translate-y-1/2"></div>
+                      <div className="absolute top-1/2 left-1/2 w-16 h-1 bg-accent-green transform -translate-x-1/2 -translate-y-1/2"></div>
+                      <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-accent-green rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
+                    </div>
+                  </div>
+                  {/* Camera Status Indicator */}
+                  <div className="absolute top-3 left-3 bg-black bg-opacity-70 text-white px-3 py-2 rounded-lg text-sm font-medium">
+                    <span className="mr-1">📷</span>
+                    Camera Active
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-text-secondary text-center">
+                      <p className="mb-2">📷</p>
+                      <p className="text-sm">Start camera for sun alignment</p>
+                      <button
+                        onClick={startCamera}
+                        className="mt-3 bg-accent-orange text-white px-4 py-2 rounded-lg text-sm font-medium"
+                      >
+                        Start Camera
+                      </button>
+                    </div>
+                  </div>
+                  {/* Crosshairs (placeholder mode) */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="relative">
+                      <div className="w-16 h-16 border-2 border-accent-green opacity-30 rounded-full"></div>
+                      <div className="absolute top-1/2 left-1/2 w-1 h-16 bg-accent-green opacity-30 transform -translate-x-1/2 -translate-y-1/2"></div>
+                      <div className="absolute top-1/2 left-1/2 w-16 h-1 bg-accent-green opacity-30 transform -translate-x-1/2 -translate-y-1/2"></div>
+                      <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-accent-green opacity-30 rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
+                    </div>
+                  </div>
+                </>
+              )}
             </>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
@@ -278,6 +379,25 @@ const CelestiNavPage: React.FC = () => {
             <p className="text-blue-200 text-xs mt-3">
               Point your device camera at the sun to get accurate readings
             </p>
+            <div className="flex gap-2 mt-3">
+              {!isCameraActive ? (
+                <button 
+                  onClick={startCamera}
+                  className="flex-1 bg-white text-accent-blue py-2 px-4 rounded-lg font-medium text-sm"
+                >
+                  <span className="mr-1">📷</span>
+                  Start Camera
+                </button>
+              ) : (
+                <button 
+                  onClick={stopCamera}
+                  className="flex-1 bg-accent-red text-white py-2 px-4 rounded-lg font-medium text-sm"
+                >
+                  <span className="mr-1">⏹️</span>
+                  Stop Camera
+                </button>
+              )}
+            </div>
           </div>
         ) : (
           <div className="bg-accent-green rounded-lg p-4 mb-6">
@@ -439,6 +559,12 @@ const CelestiNavPage: React.FC = () => {
             Sensor Status
           </h3>
           <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-text-secondary">GPS Permission</span>
+              <span className={gpsPermission ? 'text-accent-green' : 'text-accent-red'}>
+                {gpsPermission ? 'Granted' : 'Not Granted'}
+              </span>
+            </div>
             <div className="flex justify-between">
               <span className="text-text-secondary">Device Orientation</span>
               <span className={sensorPermission ? 'text-accent-green' : 'text-accent-red'}>
