@@ -127,16 +127,16 @@ const WeatherPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-primary-800 p-4 page-transition">
+    <div className="min-h-screen p-4 page-transition">
       <div className="max-w-md mx-auto space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-text-primary flex items-center">
+          <h1 className="text-xl font-bold text-text-inverse flex items-center">
             <span className="mr-2">🌤️</span>
             Weather AI Analysis
           </h1>
           <div className="flex items-center">
-            <span className="text-text-secondary text-sm mr-2">Online</span>
+            <span className="text-text-inverse/70 text-sm mr-2">Online</span>
             <span className="status-dot status-online"></span>
           </div>
         </div>
@@ -164,17 +164,17 @@ const WeatherPage: React.FC = () => {
         <canvas ref={canvasRef} style={{ display: 'none' }} />
 
         {/* Sky Photo Capture Card */}
-        <div className="info-card bg-accent-blue/10 border-accent-blue/30 animate-slide-up">
+        <div className="gradient-card-blue animate-slide-up">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-text-primary font-bold text-sm flex items-center">
+            <h3 className="text-white font-bold text-sm flex items-center">
               <span className="mr-2">📷</span>
               Sky Photo Capture - Step {currentStep} of 4
             </h3>
             <span className="status-dot status-online"></span>
           </div>
           
-          <p className="text-text-secondary text-sm mb-4">
-            Point your camera at the <strong className="text-accent-blue">{currentDirection}</strong> sky and capture a photo for accurate weather analysis.
+          <p className="text-white/80 text-sm mb-4">
+            Point your camera at the <strong className="text-white">{currentDirection}</strong> sky and capture a photo for accurate weather analysis.
           </p>
           
           {/* Direction Buttons */}
@@ -185,10 +185,10 @@ const WeatherPage: React.FC = () => {
                 onClick={() => selectDirection(direction)}
                 className={`py-3 px-4 rounded-lg font-medium transition-all text-sm ${
                   direction === currentDirection
-                    ? 'bg-accent-blue text-white shadow-md'
+                    ? 'bg-white/20 text-white shadow-md border border-white/30'
                     : capturedDirections.includes(direction)
-                    ? 'bg-accent-green text-white shadow-md'
-                    : 'bg-primary-700 text-text-secondary border border-primary-500/50 hover:bg-primary-600'
+                    ? 'bg-accent-success text-white shadow-md'
+                    : 'bg-white/10 text-white/70 border border-white/20 hover:bg-white/20'
                 }`}
               >
                 <span className="block text-lg mb-1">
@@ -252,21 +252,21 @@ const WeatherPage: React.FC = () => {
               <span className="text-text-secondary text-sm">Weather Classification</span>
               <div className="flex items-center">
                 <span className="status-dot status-online mr-2"></span>
-                <span className="text-accent-green text-sm font-semibold">Online</span>
+                <span className="text-accent-success text-sm font-semibold">Online</span>
               </div>
             </div>
             <div className="flex justify-between items-center py-1">
               <span className="text-text-secondary text-sm">Cloud Detection</span>
               <div className="flex items-center">
                 <span className="status-dot status-online mr-2"></span>
-                <span className="text-accent-green text-sm font-semibold">Online</span>
+                <span className="text-accent-success text-sm font-semibold">Online</span>
               </div>
             </div>
             <div className="flex justify-between items-center py-1">
               <span className="text-text-secondary text-sm">Sky Condition Analysis</span>
               <div className="flex items-center">
                 <span className="status-dot status-online mr-2"></span>
-                <span className="text-accent-green text-sm font-semibold">Online</span>
+                <span className="text-accent-success text-sm font-semibold">Online</span>
               </div>
             </div>
             <div className="flex justify-between items-center py-1">
@@ -280,23 +280,23 @@ const WeatherPage: React.FC = () => {
 
         {/* Error Display */}
         {error && (
-          <div className="info-card bg-accent-red/10 border-accent-red/30 animate-fade-in">
+          <div className="info-card bg-accent-error/10 border-accent-error/30 animate-fade-in">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-accent-red font-bold text-sm flex items-center">
+              <h3 className="text-accent-error font-bold text-sm flex items-center">
                 <span className="mr-2">❌</span>
                 Error
               </h3>
               <span className="status-dot status-error"></span>
             </div>
-            <p className="text-accent-red text-sm">{error}</p>
+            <p className="text-accent-error text-sm">{error}</p>
           </div>
         )}
 
         {/* Analysis in Progress */}
         {isAnalyzing && (
-          <div className="info-card bg-accent-blue/10 border-accent-blue/30 animate-fade-in">
+          <div className="info-card bg-accent-primary/10 border-accent-primary/30 animate-fade-in">
             <div className="flex items-center justify-center py-6">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent-blue mr-3"></div>
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent-primary mr-3"></div>
               <span className="text-text-primary text-sm">Processing sky images with ML models...</span>
             </div>
           </div>
@@ -304,9 +304,9 @@ const WeatherPage: React.FC = () => {
 
         {/* Analysis Results */}
         {analysisResult && (
-          <div className="info-card bg-accent-green/10 border-accent-green/30 animate-slide-up">
+          <div className="gradient-card-purple animate-slide-up">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-accent-green font-bold text-sm flex items-center">
+              <h3 className="text-white font-bold text-sm flex items-center">
                 <span className="mr-2">🌤️</span>
                 Weather Analysis Results
               </h3>
@@ -314,8 +314,8 @@ const WeatherPage: React.FC = () => {
             </div>
             
             {/* Current Conditions */}
-            <div className="bg-accent-green/5 rounded-lg p-4 mb-4">
-              <h4 className="text-text-primary font-semibold mb-3 text-sm">Current Conditions</h4>
+            <div className="bg-white/10 rounded-lg p-4 mb-4">
+              <h4 className="text-white font-semibold mb-3 text-sm">Current Conditions</h4>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-text-secondary">Cloud Cover:</span>
@@ -337,8 +337,8 @@ const WeatherPage: React.FC = () => {
             </div>
 
             {/* Navigation Recommendations */}
-            <div className="bg-accent-green/5 rounded-lg p-4">
-              <h4 className="text-text-primary font-semibold mb-3 text-sm">📍 Navigation Recommendations</h4>
+            <div className="bg-white/10 rounded-lg p-4">
+              <h4 className="text-white font-semibold mb-3 text-sm">📍 Navigation Recommendations</h4>
               <div className="text-text-secondary text-sm space-y-2">
                 <div className="flex items-start">
                   <span className="mr-2">☀️</span>
@@ -367,7 +367,7 @@ const WeatherPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="text-text-muted text-xs mt-3 text-center">
+            <div className="text-white/60 text-xs mt-3 text-center">
               Analysis completed at {new Date().toLocaleTimeString()}
             </div>
           </div>

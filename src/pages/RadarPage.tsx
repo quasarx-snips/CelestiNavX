@@ -2,44 +2,44 @@ import React from 'react'
 
 const RadarPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-primary-800 p-4 page-transition">
+    <div className="min-h-screen bg-gradient-to-br from-surface-800 via-surface-700 to-surface-600 p-4 page-transition">
       <div className="max-w-md mx-auto space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-text-primary flex items-center">
+          <h1 className="text-xl font-bold text-text-inverse flex items-center">
             <span className="mr-2">📡</span>
             Radar & Signals
           </h1>
           <div className="flex items-center">
-            <span className="text-text-secondary text-sm mr-2">Scanning</span>
+            <span className="text-text-inverse/70 text-sm mr-2">Scanning</span>
             <span className="status-dot status-online animate-pulse"></span>
           </div>
         </div>
 
         {/* Radar Display Card */}
-        <div className="info-card bg-primary-900/50 border-accent-green/30 animate-fade-in">
+        <div className="gradient-card-blue animate-fade-in">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-text-primary font-bold text-sm">RADAR DISPLAY</h3>
+            <h3 className="text-white font-bold text-sm">RADAR DISPLAY</h3>
             <span className="status-dot status-online"></span>
           </div>
           
           <div className="relative w-full aspect-square max-w-xs mx-auto">
             {/* Radar Background */}
-            <div className="absolute inset-0 border-2 border-accent-green rounded-full opacity-30"></div>
-            <div className="absolute inset-4 border border-accent-green rounded-full opacity-20"></div>
-            <div className="absolute inset-8 border border-accent-green rounded-full opacity-10"></div>
+            <div className="absolute inset-0 border-2 border-accent-success rounded-full opacity-30"></div>
+            <div className="absolute inset-4 border border-accent-success rounded-full opacity-20"></div>
+            <div className="absolute inset-8 border border-accent-success rounded-full opacity-10"></div>
             
             {/* Radar Lines */}
-            <div className="absolute top-1/2 left-0 right-0 h-px bg-accent-green opacity-20"></div>
-            <div className="absolute left-1/2 top-0 bottom-0 w-px bg-accent-green opacity-20"></div>
+            <div className="absolute top-1/2 left-0 right-0 h-px bg-accent-success opacity-20"></div>
+            <div className="absolute left-1/2 top-0 bottom-0 w-px bg-accent-success opacity-20"></div>
             
             {/* Center Dot */}
-            <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-accent-green rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
+            <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-accent-success rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
             
             {/* Sweep Animation */}
-            <div className="absolute top-1/2 left-1/2 w-full h-px bg-gradient-to-r from-accent-green to-transparent transform -translate-y-1/2 origin-left rotate-45 animate-pulse"></div>
+            <div className="absolute top-1/2 left-1/2 w-full h-px bg-gradient-to-r from-accent-success to-transparent transform -translate-y-1/2 origin-left rotate-45 animate-pulse"></div>
           </div>
-          <p className="text-center text-accent-green text-sm mt-4 font-semibold">Scanning...</p>
+          <p className="text-center text-accent-success text-sm mt-4 font-semibold">Scanning...</p>
         </div>
 
         {/* Signal Detection Card */}
@@ -84,11 +84,11 @@ const RadarPage: React.FC = () => {
                 <span className="text-text-secondary text-sm">Bluetooth Devices</span>
                 <div className="flex items-center">
                   <span className="status-dot status-online mr-2"></span>
-                  <span className="text-accent-green text-sm font-semibold">5 Detected</span>
+                  <span className="text-accent-success text-sm font-semibold">5 Detected</span>
                 </div>
               </div>
               <div className="w-full bg-primary-700 rounded-full h-2">
-                <div className="bg-accent-green h-2 rounded-full w-2/3"></div>
+                <div className="bg-accent-success h-2 rounded-full w-2/3"></div>
               </div>
             </div>
           </div>
@@ -137,7 +137,7 @@ const RadarPage: React.FC = () => {
         </div>
 
         {/* Status Footer */}
-        <div className="text-center text-text-muted text-xs pt-2">
+        <div className="text-center text-text-inverse/50 text-xs pt-2">
           <div className="flex items-center justify-center mb-1">
             <span className="status-dot status-online mr-2"></span>
             <span>Radar active • All frequencies monitored</span>
