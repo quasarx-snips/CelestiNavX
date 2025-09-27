@@ -66,7 +66,7 @@ function App() {
 
   return (
     <div className="h-screen w-full text-contrast-high flex flex-col" style={{ background: 'var(--bg-primary)' }}>
-      <main className="flex-1 overflow-auto scrollable pb-20">
+      <main className="flex-1 overflow-auto scrollable pb-16">
         {renderPage()}
       </main>
       <div className="fixed bottom-0 left-0 right-0 z-50">
