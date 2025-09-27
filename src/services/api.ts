@@ -237,7 +237,7 @@ class APIService {
         'stormy': { cloudCover: 95 + Math.random() * 5, visibility: 1 + Math.random() * 3, confidence: 0.7 }
       }
       
-      const weatherType = cloudTypes[Math.floor(Math.random() * cloudTypes.length)]
+      const weatherType = cloudTypes[Math.floor(Math.random() * cloudTypes.length)] as keyof typeof weatherDetails
       const conditions = weatherDetails[weatherType]
       
       const analysisTexts = {
@@ -258,7 +258,7 @@ class APIService {
         analysis: {
           classification: `AI Weather Analysis (${imageCount} images processed)`,
           confidence: conditions.confidence,
-          details: analysisTexts[weatherType]
+          details: analysisTexts[weatherType as keyof typeof analysisTexts]
         },
         timestamp: Date.now()
       }
