@@ -13,8 +13,67 @@ const CelestiNavPage: React.FC = () => {
   const [lastResult, setLastResult] = useState<{ lat: number; lng: number } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [sensorPermission, setSensorPermission] = useState(false)
+  const [gpsLocation, setGpsLocation] = useState<{ lat: number; lng: number; accuracy?: number } | null>(null)
+  const [gpsLoading, setGpsLoading] = useState(false)
+  const [gpsPermission, setGpsPermission] = useState(false)
 
   const { measurements } = useMeasurements()
+
+  // GPS functionality
+  const getGPSLocation = async () => {
+    setGpsLoading(true)
+    setError(null)
+
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          resolve,
+          reject,
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 60000
+          }
+        )
+      })
+
+      const location = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+        accuracy: position.coords.accuracy
+      }
+
+      setGpsLocation(location)
+      setGpsPermission(true)
+      
+      // Auto-detect elevation if available
+      if (position.coords.altitude !== null) {
+        setElevation(Math.round(position.coords.altitude))
+      }
+
+      return location
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'GPS access failed'
+      setError(`GPS Error: ${message}`)
+      setGpsPermission(false)
+      throw err
+    } finally {
+      setGpsLoading(false)
+    }
+  }
+
+  // Auto-detect atmospheric pressure (if available)
+  const detectEnvironmental = async () => {
+    try {
+      // Try to estimate pressure based on elevation (rough approximation)
+      if (elevation > 0) {
+        const estimatedPressure = 1013.25 * Math.pow(1 - 0.0065 * elevation / 288.15, 5.255)
+        setPressure(Math.round(estimatedPressure * 100) / 100)
+      }
+    } catch (err) {
+      console.log('Environmental detection not available')
+    }
+  }
 
   // Device orientation sensor handling
   useEffect(() => {
@@ -59,28 +118,43 @@ const CelestiNavPage: React.FC = () => {
   }, [])
 
   const calculatePosition = async () => {
-    if (!sensorPermission) {
-      setError('Device orientation permission required')
-      return
-    }
-
     setIsCalculating(true)
     setError(null)
 
     try {
-      // Call backend API
-      const result = await apiService.calculateSolarPosition({
-        pitch,
-        heading,
-        elevation,
-        pressure,
-        temperature
-      })
+      if (mode === 'gps') {
+        // GPS mode - get current location directly
+        const location = gpsLocation || await getGPSLocation()
+        setLastResult({ lat: location.lat, lng: location.lng })
+        
+        // Save GPS measurement to database
+        await apiService.saveMeasurement({
+          latitude: location.lat,
+          longitude: location.lng,
+          method: 'gps',
+          accuracy: location.accuracy,
+          elevation,
+          pressure,
+          temperature
+        })
+        
+      } else {
+        // Solar mode - calculate position from sun observations
+        if (!sensorPermission) {
+          setError('Device orientation permission required')
+          return
+        }
 
-      // The backend already saved the measurement during calculation
-      // Just update our local state with the result
+        const result = await apiService.calculateSolarPosition({
+          pitch,
+          heading,
+          elevation,
+          pressure,
+          temperature
+        })
 
-      setLastResult({ lat: result.latitude, lng: result.longitude })
+        setLastResult({ lat: result.latitude, lng: result.longitude })
+      }
       
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Calculation failed')
@@ -89,18 +163,27 @@ const CelestiNavPage: React.FC = () => {
     }
   }
 
+  // Effect to detect environmental conditions when elevation changes
+  useEffect(() => {
+    detectEnvironmental()
+  }, [elevation])
+
   return (
     <div className="min-h-full bg-primary-800 p-4">
       <div className="max-w-md mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-xl font-bold flex items-center">
-            <span className="mr-2">☀️</span>
-            Solar Calculator
+            <span className="mr-2">{mode === 'gps' ? '📡' : '☀️'}</span>
+            {mode === 'gps' ? 'GPS Navigator' : 'Solar Calculator'}
           </h1>
           <div className="flex items-center">
-            <span className="text-sm text-text-secondary mr-2">Offline</span>
-            <div className="w-2 h-2 bg-accent-orange rounded-full"></div>
+            <span className="text-sm text-text-secondary mr-2">
+              {mode === 'gps' && gpsLocation ? 'GPS Ready' : 'Offline'}
+            </span>
+            <div className={`w-2 h-2 rounded-full ${
+              mode === 'gps' && gpsLocation ? 'bg-accent-green' : 'bg-accent-orange'
+            }`}></div>
           </div>
         </div>
 
@@ -130,45 +213,117 @@ const CelestiNavPage: React.FC = () => {
           </button>
         </div>
 
-        {/* Camera View */}
+        {/* Camera View / GPS Status */}
         <div className="relative bg-black rounded-lg overflow-hidden mb-6" style={{ aspectRatio: '4/3' }}>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-text-secondary text-center">
-              <p className="mb-2">📷</p>
-              <p className="text-sm">Align sun with center circle</p>
+          {mode === 'solar' ? (
+            <>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-text-secondary text-center">
+                  <p className="mb-2">📷</p>
+                  <p className="text-sm">Align sun with center circle</p>
+                </div>
+              </div>
+              {/* Crosshairs */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="relative">
+                  <div className="w-16 h-16 border-2 border-accent-green rounded-full"></div>
+                  <div className="absolute top-1/2 left-1/2 w-1 h-16 bg-accent-green transform -translate-x-1/2 -translate-y-1/2"></div>
+                  <div className="absolute top-1/2 left-1/2 w-16 h-1 bg-accent-green transform -translate-x-1/2 -translate-y-1/2"></div>
+                  <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-accent-green rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-text-secondary text-center">
+                {gpsLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mx-auto mb-2"></div>
+                    <p className="text-sm">Acquiring GPS signal...</p>
+                  </>
+                ) : gpsLocation ? (
+                  <>
+                    <p className="mb-2 text-2xl">🌍</p>
+                    <p className="text-sm text-accent-green">GPS Signal Acquired</p>
+                    <p className="text-xs mt-1">Accuracy: ±{gpsLocation.accuracy?.toFixed(0)}m</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="mb-2">📡</p>
+                    <p className="text-sm">Tap 'Get GPS Location' to start</p>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-          {/* Crosshairs */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="relative">
-              <div className="w-16 h-16 border-2 border-accent-green rounded-full"></div>
-              <div className="absolute top-1/2 left-1/2 w-1 h-16 bg-accent-green transform -translate-x-1/2 -translate-y-1/2"></div>
-              <div className="absolute top-1/2 left-1/2 w-16 h-1 bg-accent-green transform -translate-x-1/2 -translate-y-1/2"></div>
-              <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-accent-green rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
-            </div>
-          </div>
+          )}
         </div>
 
-        {/* Solar Sensor Data */}
-        <div className="bg-accent-blue rounded-lg p-4 mb-6">
-          <h3 className="text-white font-semibold mb-4 flex items-center">
-            <span className="mr-2">☀️</span>
-            Solar Sensor Data
-          </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-blue-200 text-sm mb-1">Solar Azimuth</p>
-              <p className="text-white text-xl font-bold">{heading.toFixed(1)}°</p>
+        {/* Sensor Data Section */}
+        {mode === 'solar' ? (
+          <div className="bg-accent-blue rounded-lg p-4 mb-6">
+            <h3 className="text-white font-semibold mb-4 flex items-center">
+              <span className="mr-2">☀️</span>
+              Solar Sensor Data
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-blue-200 text-sm mb-1">Solar Azimuth</p>
+                <p className="text-white text-xl font-bold">{heading.toFixed(1)}°</p>
+              </div>
+              <div>
+                <p className="text-blue-200 text-sm mb-1">Solar Altitude</p>
+                <p className="text-white text-xl font-bold">{pitch.toFixed(1)}°</p>
+              </div>
             </div>
-            <div>
-              <p className="text-blue-200 text-sm mb-1">Solar Altitude</p>
-              <p className="text-white text-xl font-bold">{pitch.toFixed(1)}°</p>
-            </div>
+            <p className="text-blue-200 text-xs mt-3">
+              Point your device camera at the sun to get accurate readings
+            </p>
           </div>
-          <p className="text-blue-200 text-xs mt-3">
-            Point your device camera at the sun to get accurate readings
-          </p>
-        </div>
+        ) : (
+          <div className="bg-accent-green rounded-lg p-4 mb-6">
+            <h3 className="text-white font-semibold mb-4 flex items-center">
+              <span className="mr-2">📡</span>
+              GPS Location Data
+            </h3>
+            {gpsLocation ? (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-green-200 text-sm mb-1">Latitude</p>
+                  <p className="text-white text-lg font-bold">{gpsLocation.lat.toFixed(6)}°</p>
+                </div>
+                <div>
+                  <p className="text-green-200 text-sm mb-1">Longitude</p>
+                  <p className="text-white text-lg font-bold">{gpsLocation.lng.toFixed(6)}°</p>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center">
+                <button
+                  onClick={getGPSLocation}
+                  disabled={gpsLoading}
+                  className="bg-white text-accent-green px-6 py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mx-auto"
+                >
+                  {gpsLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-accent-green mr-2"></div>
+                      Getting Location...
+                    </>
+                  ) : (
+                    <>
+                      <span className="mr-2">📍</span>
+                      Get GPS Location
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+            {gpsLocation && (
+              <p className="text-green-200 text-xs mt-3">
+                GPS accuracy: ±{gpsLocation.accuracy?.toFixed(0)}m • High precision location
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Environmental Parameters */}
         <div className="bg-primary-600 rounded-lg p-4 mb-6 border border-primary-500">
@@ -207,16 +362,16 @@ const CelestiNavPage: React.FC = () => {
           </div>
           <button 
             onClick={calculatePosition}
-            disabled={isCalculating || !sensorPermission}
+            disabled={isCalculating || (mode === 'solar' && !sensorPermission)}
             className="w-full bg-accent-blue text-white py-3 rounded-lg font-semibold disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center"
           >
             {isCalculating ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Calculating...
+                {mode === 'gps' ? 'Getting Location...' : 'Calculating...'}
               </>
             ) : (
-              'Calculate Position'
+              mode === 'gps' ? 'Get Current Location' : 'Calculate Position'
             )}
           </button>
         </div>
@@ -225,8 +380,8 @@ const CelestiNavPage: React.FC = () => {
         {lastResult && (
           <div className="bg-accent-green rounded-lg p-4 mb-6">
             <h3 className="text-white font-semibold mb-3 flex items-center">
-              <span className="mr-2">🎯</span>
-              Calculated Position
+              <span className="mr-2">{mode === 'gps' ? '📍' : '🎯'}</span>
+              {mode === 'gps' ? 'Current Position' : 'Calculated Position'}
             </h3>
             <div className="text-white text-sm space-y-2">
               <div className="flex justify-between">
@@ -238,7 +393,7 @@ const CelestiNavPage: React.FC = () => {
                 <span className="font-mono">{lastResult.lng.toFixed(6)}°</span>
               </div>
               <div className="text-green-200 text-xs mt-2">
-                Position saved to local database ✓
+                {mode === 'gps' ? 'GPS position' : 'Solar calculation'} saved to database ✓
               </div>
             </div>
           </div>

@@ -116,6 +116,24 @@ class APIService {
     }
   }
 
+  // Convenience method for saving GPS and other measurements
+  async saveMeasurement(data: {
+    latitude: number
+    longitude: number
+    method: string
+    accuracy?: number
+    elevation?: number
+    pressure?: number
+    temperature?: number
+  }) {
+    const measurementData = {
+      ...data,
+      timestamp: Date.now(),
+      session_id: 1 // Default session for now
+    }
+    return this.createMeasurement(measurementData)
+  }
+
   // Weather API
   async getWeatherReadings(limit = 20) {
     try {
