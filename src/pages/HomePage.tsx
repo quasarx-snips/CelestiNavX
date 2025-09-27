@@ -15,33 +15,33 @@ const HomePage: React.FC = () => {
   }, [])
 
   return (
-    <div className="min-h-screen bg-primary-800 p-4 page-transition">
+    <div className="min-h-screen p-4 page-transition">
       <div className="max-w-md mx-auto space-y-4">
         {/* Header with app branding */}
         <div className="text-center mb-6">
           <div className="flex items-center justify-center mb-3">
-            <div className="w-12 h-12 bg-accent-blue rounded-full flex items-center justify-center mr-3 shadow-md">
+            <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center mr-3 shadow-card-md">
               <span className="text-2xl">🧭</span>
             </div>
             <div className="text-left">
-              <h1 className="text-2xl font-bold text-text-primary">CelestiNav</h1>
-              <p className="text-text-secondary text-sm">Offline Survival Navigation System</p>
+              <h1 className="text-2xl font-bold text-text-inverse">CelestiNav</h1>
+              <p className="text-text-inverse/80 text-sm">Offline Survival Navigation System</p>
             </div>
           </div>
         </div>
 
         {/* Status indicators */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="metric-card">
+          <div className="gradient-card-blue">
             <div className="flex items-center justify-center mb-2">
-              <span className="status-dot status-online mr-2"></span>
-              <span className="text-text-secondary text-sm font-medium">Offline Ready</span>
+              <span className="status-dot bg-white/90 mr-2"></span>
+              <span className="text-white text-sm font-medium">Offline Ready</span>
             </div>
           </div>
-          <div className="metric-card">
+          <div className="gradient-card-purple">
             <div className="flex items-center justify-center mb-2">
-              <span className="status-dot status-online mr-2"></span>
-              <span className="text-text-secondary text-sm font-medium">AI Powered</span>
+              <span className="status-dot bg-white/90 mr-2"></span>
+              <span className="text-white text-sm font-medium">AI Powered</span>
             </div>
           </div>
         </div>
@@ -51,29 +51,29 @@ const HomePage: React.FC = () => {
           <div className="info-card animate-fade-in">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                {user.profileImageUrl ? (
+                {user.profile_image_url ? (
                   <img 
-                    src={user.profileImageUrl} 
+                    src={user.profile_image_url} 
                     alt="Profile" 
-                    className="w-10 h-10 rounded-full object-cover mr-3 ring-2 ring-primary-400/20"
+                    className="w-10 h-10 rounded-full object-cover mr-3 ring-2 ring-accent-primary/20"
                   />
                 ) : (
-                  <div className="w-10 h-10 bg-accent-blue rounded-full flex items-center justify-center mr-3 shadow-sm">
+                  <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center mr-3 shadow-card">
                     <span className="text-white font-semibold text-sm">
-                      {(user.firstName || user.email || 'U')[0].toUpperCase()}
+                      {(user.first_name || user.email || 'U')[0].toUpperCase()}
                     </span>
                   </div>
                 )}
                 <div>
                   <p className="text-text-primary font-semibold text-sm">
-                    {user.firstName} {user.lastName}
+                    {user.first_name} {user.last_name}
                   </p>
                   <p className="text-text-secondary text-xs">{user.email}</p>
                 </div>
               </div>
               <button 
                 onClick={logout}
-                className="text-accent-red text-xs font-medium hover:text-red-400 transition-colors py-1 px-2 rounded hover:bg-primary-700/50"
+                className="text-accent-error text-xs font-medium hover:text-red-400 transition-colors py-1 px-2 rounded hover:bg-surface-50/20"
               >
                 Sign Out
               </button>
@@ -94,15 +94,15 @@ const HomePage: React.FC = () => {
             <div className="flex justify-between items-center py-1">
               <span className="text-text-secondary text-sm">Mode</span>
               <div className="flex items-center">
-                <span className="status-dot bg-accent-yellow mr-2"></span>
-                <span className="text-accent-yellow font-semibold text-sm">Day Mode</span>
+                <span className="status-dot bg-accent-warning mr-2"></span>
+                <span className="text-accent-warning font-semibold text-sm">Day Mode</span>
               </div>
             </div>
             <div className="flex justify-between items-center py-1">
               <span className="text-text-secondary text-sm">Altitude</span>
               <div className="flex items-center">
                 <span className="status-dot status-error mr-2"></span>
-                <span className="text-accent-red font-semibold text-sm">--- ASL</span>
+                <span className="text-accent-error font-semibold text-sm">--- ASL</span>
               </div>
             </div>
             <div className="flex justify-between items-center py-1">
@@ -126,13 +126,13 @@ const HomePage: React.FC = () => {
 
         {/* Quick Action Cards */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="action-card text-center">
+          <div className="gradient-card-pink text-center">
             <span className="text-2xl mb-2 block">🌤️</span>
-            <span className="text-text-primary text-sm font-semibold">Weather AI</span>
+            <span className="text-white text-sm font-semibold">Weather AI</span>
           </div>
-          <div className="action-card text-center">
+          <div className="gradient-card-purple text-center">
             <span className="text-2xl mb-2 block">📡</span>
-            <span className="text-text-primary text-sm font-semibold">Cell Radar</span>
+            <span className="text-white text-sm font-semibold">Cell Radar</span>
           </div>
         </div>
 
@@ -146,9 +146,9 @@ const HomePage: React.FC = () => {
         <div className="text-center text-text-muted text-xs space-y-1 pt-2">
           <div className="flex items-center justify-center">
             <span className="status-dot status-online mr-2"></span>
-            <span>System ready • All sensors active</span>
+            <span className="text-text-inverse/60">System ready • All sensors active</span>
           </div>
-          <p>Last sync: {currentTime.toLocaleDateString()}</p>
+          <p className="text-text-inverse/60">Last sync: {currentTime.toLocaleDateString()}</p>
         </div>
       </div>
     </div>
