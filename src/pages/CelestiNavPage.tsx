@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useMeasurements } from '../hooks/useDatabase'
+import { useAuth } from '../hooks/useAuth'
 import { apiService } from '../services/api'
 
 const CelestiNavPage: React.FC = () => {
@@ -18,6 +19,7 @@ const CelestiNavPage: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null)
 
   const { measurements } = useMeasurements()
+  const { user } = useAuth()
 
   // Auto-start camera when component mounts
   useEffect(() => {
@@ -130,7 +132,8 @@ const CelestiNavPage: React.FC = () => {
         heading,
         elevation,
         pressure,
-        temperature
+        temperature,
+        userId: user?.id
       })
 
       setLastResult({ lat: result.latitude, lng: result.longitude })

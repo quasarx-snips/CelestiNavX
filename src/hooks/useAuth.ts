@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react'
+import { apiService } from '../services/api'
 
 interface User {
   id: string
@@ -53,8 +54,8 @@ function getDeviceUserId(): string {
 export function useAuth() {
   // Direct access mode - no authentication required
   const [isAuthenticated] = useState(true)
-  const [isLoading] = useState(false)
-  const [user] = useState<User | null>(() => {
+  const [isLoading, setIsLoading] = useState(false)
+  const [user, setUser] = useState<User | null>(() => {
     const deviceUserId = getDeviceUserId()
     return {
       id: deviceUserId,
@@ -65,17 +66,44 @@ export function useAuth() {
   })
 
   useEffect(() => {
-    // Skip authentication check - direct access enabled
-  }, [])
+    // Ensure user is created in database on first load
+    const ensureUserInDatabase = async () => {
+      if (user) {
+        setIsLoading(true)
+        try {
+          await apiService.createOrGetUser(user.id, {
+            email: user.email,
+            first_name: user.first_name,
+            last_name: user.last_name
+          })
+        } catch (error) {
+          console.warn('Failed to create/get user in database:', error)
+        } finally {
+          setIsLoading(false)
+        }
+      }
+    }
+    
+    ensureUserInDatabase()
+  }, [user])
 
   const checkAuthStatus = async () => {
     // No-op - authentication disabled
   }
 
   const logout = async () => {
-    // Clear device user ID on logout to allow new device registration
-    localStorage.removeItem('celestinav_device_user_id')
-    window.location.reload()
+    try {
+      // Delete all user data from the database
+      if (user?.id) {
+        await apiService.deleteUserData(user.id)
+      }
+    } catch (error) {
+      console.warn('Failed to delete user data:', error)
+    } finally {
+      // Clear device user ID on logout to allow new device registration
+      localStorage.removeItem('celestinav_device_user_id')
+      window.location.reload()
+    }
   }
 
   return {

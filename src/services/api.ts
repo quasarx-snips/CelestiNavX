@@ -6,6 +6,7 @@ export interface SolarCalculationRequest {
   pressure?: number
   temperature?: number
   timestamp?: number
+  userId?: string
 }
 
 export interface SolarCalculationResponse {
@@ -48,6 +49,48 @@ export interface WeatherAnalysisResponse {
 class APIService {
   private baseURL = '/api'
 
+  // User Management API
+  async createOrGetUser(deviceId: string, userData: {
+    email?: string
+    first_name?: string
+    last_name?: string
+  } = {}) {
+    try {
+      const response = await fetch(`${this.baseURL}/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          device_id: deviceId,
+          ...userData
+        })
+      })
+      
+      if (!response.ok) throw new Error(`Failed to create/get user: ${response.status}`)
+      
+      const result = await response.json()
+      return result.data
+    } catch (error) {
+      console.error('Create/get user error:', error)
+      throw new Error('Failed to create or get user')
+    }
+  }
+
+  async deleteUserData(userId: string) {
+    try {
+      const response = await fetch(`${this.baseURL}/users/${userId}/data`, {
+        method: 'DELETE'
+      })
+      
+      if (!response.ok) throw new Error(`Failed to delete user data: ${response.status}`)
+      
+      const result = await response.json()
+      return result
+    } catch (error) {
+      console.error('Delete user data error:', error)
+      throw new Error('Failed to delete user data')
+    }
+  }
+
   async calculateSolarPosition(data: SolarCalculationRequest): Promise<SolarCalculationResponse> {
     try {
       const params = new URLSearchParams({
@@ -57,6 +100,11 @@ class APIService {
         pressure: (data.pressure || 1013.25).toString(),
         temperature: (data.temperature || 15).toString()
       })
+      
+      // Add user_id if provided
+      if (data.userId) {
+        params.append('user_id', data.userId)
+      }
 
       const response = await fetch(`/calculate_latlon?${params}`, {
         method: 'GET',

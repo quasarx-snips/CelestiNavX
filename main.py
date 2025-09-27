@@ -153,6 +153,7 @@ def calculate_latlon():
         obs_altitude = float(request.args.get('pitch'))
         obs_azimuth = float(request.args.get('heading'))
         elevation = float(request.args.get('elevation', 0.0))
+        user_id = request.args.get('user_id')  # Get user_id from request
     except (TypeError, ValueError):
         return jsonify({"error": "Invalid or missing 'pitch' or 'heading' parameters."}), 400
 
@@ -185,7 +186,8 @@ def calculate_latlon():
             temperature=float(request.args.get('temperature', 15.0)),
             calculation_method='solar',
             accuracy=1000.0,  # Default accuracy in meters
-            timestamp=dt_utc
+            timestamp=dt_utc,
+            user_id=user_id  # Associate measurement with user
         )
         db.session.add(measurement)
         db.session.commit()
@@ -203,6 +205,69 @@ def calculate_latlon():
         "measurement_id": measurement_id,
         "accuracy": 1000.0
     })
+
+# ====================================================================
+# --- USER MANAGEMENT API ENDPOINTS ---
+# ====================================================================
+
+@app.route('/api/users', methods=['POST'])
+def create_or_get_user():
+    """Create or get user by device ID."""
+    try:
+        data = request.get_json()
+        device_id = data.get('device_id')
+        
+        if not device_id:
+            return jsonify({"error": "device_id is required"}), 400
+        
+        # Try to find existing user
+        user = User.query.filter_by(id=device_id).first()
+        
+        if not user:
+            # Create new user
+            user = User(
+                id=device_id,
+                email=data.get('email', f"{device_id}@celestinav.local"),
+                first_name=data.get('first_name', 'Guest'),
+                last_name=data.get('last_name', 'User')
+            )
+            db.session.add(user)
+            db.session.commit()
+            
+        return jsonify({
+            "status": "success",
+            "data": user.to_dict()
+        }), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/users/<user_id>/data', methods=['DELETE'])
+def delete_user_data(user_id):
+    """Delete all data for a specific user."""
+    try:
+        # Delete all measurements for the user
+        Measurement.query.filter_by(user_id=user_id).delete()
+        
+        # Delete all weather readings for the user
+        WeatherReading.query.filter_by(user_id=user_id).delete()
+        
+        # Delete all sessions for the user
+        UserSession.query.filter_by(user_id=user_id).delete()
+        
+        # Delete the user record
+        user = User.query.filter_by(id=user_id).first()
+        if user:
+            db.session.delete(user)
+        
+        db.session.commit()
+        
+        return jsonify({
+            "status": "success",
+            "message": "User data deleted successfully"
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
 
 # ====================================================================
 # --- REST API ENDPOINTS ---
@@ -237,7 +302,8 @@ def create_measurement():
             temperature=data.get('temperature', 15),
             calculation_method=data.get('calculationMethod', 'solar'),
             accuracy=data.get('accuracy'),
-            notes=data.get('notes')
+            notes=data.get('notes'),
+            user_id=data.get('user_id')  # Associate measurement with user
         )
         db.session.add(measurement)
         db.session.commit()
