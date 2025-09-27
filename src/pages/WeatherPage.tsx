@@ -136,40 +136,42 @@ const WeatherPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-full bg-primary-800 p-4">
-      <div className="max-w-md mx-auto">
+    <div className="min-h-screen bg-primary-800 p-3 sm:p-4">
+      <div className="max-w-sm mx-auto sm:max-w-md">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-xl font-bold flex items-center mb-2">
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-lg sm:text-xl font-bold flex items-center mb-2">
             <span className="mr-2">🌤️</span>
             Weather AI Analysis
           </h1>
+          <p className="text-text-secondary text-sm">Capture sky images for AI weather analysis</p>
         </div>
 
         {/* Camera View */}
         {isCameraActive && (
-          <div className="bg-black rounded-lg overflow-hidden mb-6" style={{ aspectRatio: '4/3' }}>
-            <div className="relative">
-              <video
-                ref={videoRef}
-                className="w-full h-full object-cover"
-                autoPlay
-                playsInline
-                muted
-              />
-              <div className="absolute top-4 left-4 bg-black bg-opacity-60 text-white px-3 py-1 rounded-lg text-sm">
-                Direction: {currentDirection}
-              </div>
-              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-                <button
-                  onClick={handleCaptureDirection}
-                  className="bg-white text-black px-6 py-3 rounded-full font-semibold flex items-center shadow-lg"
-                >
-                  <span className="mr-2">📷</span>
-                  Capture {currentDirection}
-                </button>
+          <div className="mb-4">
+            <div className="bg-black rounded-xl overflow-hidden mb-3 shadow-lg" style={{ aspectRatio: '4/3' }}>
+              <div className="relative h-full">
+                <video
+                  ref={videoRef}
+                  className="w-full h-full object-cover"
+                  autoPlay
+                  playsInline
+                  muted
+                />
+                <div className="absolute top-3 left-3 bg-black bg-opacity-70 text-white px-3 py-2 rounded-lg text-sm font-medium">
+                  📍 Direction: {currentDirection}
+                </div>
               </div>
             </div>
+            {/* Capture Button - Positioned below camera */}
+            <button
+              onClick={handleCaptureDirection}
+              className="w-full bg-accent-blue text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+            >
+              <span className="mr-2 text-xl">📷</span>
+              Capture {currentDirection} Sky
+            </button>
           </div>
         )}
 
@@ -177,30 +179,30 @@ const WeatherPage: React.FC = () => {
         <canvas ref={canvasRef} style={{ display: 'none' }} />
 
         {/* Sky Photo Capture */}
-        <div className="bg-primary-600 rounded-lg p-4 mb-6 border border-accent-blue">
-          <h3 className="text-text-primary font-semibold mb-4 flex items-center">
+        <div className="bg-primary-600 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6 border border-accent-blue">
+          <h3 className="text-text-primary font-semibold mb-3 sm:mb-4 flex items-center text-sm sm:text-base">
             <span className="mr-2">📷</span>
             Sky Photo Capture - Step {currentStep} of 4
           </h3>
-          <p className="text-text-secondary text-sm mb-4">
+          <p className="text-text-secondary text-xs sm:text-sm mb-3 sm:mb-4">
             Point your camera at the <strong>{currentDirection}</strong> sky and capture a photo for accurate weather analysis.
           </p>
           
           {/* Direction Buttons */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-3 sm:mb-4">
             {directions.map((direction) => (
               <button
                 key={direction}
                 onClick={() => selectDirection(direction)}
-                className={`py-3 px-4 rounded-lg font-medium transition-colors ${
+                className={`py-3 sm:py-4 px-3 sm:px-4 rounded-xl font-medium transition-all active:scale-95 text-xs sm:text-sm ${
                   direction === currentDirection
-                    ? 'bg-accent-blue text-white'
+                    ? 'bg-accent-blue text-white shadow-lg'
                     : capturedDirections.includes(direction)
-                    ? 'bg-accent-green text-white'
+                    ? 'bg-accent-green text-white shadow-lg'
                     : 'bg-primary-700 text-text-secondary border border-primary-500'
                 }`}
               >
-                <span className="block text-lg mb-1">
+                <span className="block text-base sm:text-lg mb-1">
                   {capturedDirections.includes(direction) ? '✅' : '📷'}
                 </span>
                 {direction}
@@ -209,11 +211,11 @@ const WeatherPage: React.FC = () => {
           </div>
 
           {/* Camera Control Buttons */}
-          <div className="flex gap-3">
+          <div className="flex gap-2 sm:gap-3">
             {!isCameraActive ? (
               <button 
                 onClick={startCamera}
-                className="flex-1 bg-accent-blue text-white py-3 rounded-lg font-semibold flex items-center justify-center"
+                className="flex-1 bg-accent-blue text-white py-3 sm:py-4 rounded-xl font-semibold flex items-center justify-center text-sm sm:text-base active:scale-95 transition-transform shadow-lg"
               >
                 <span className="mr-2">📷</span>
                 Start Camera
@@ -221,7 +223,7 @@ const WeatherPage: React.FC = () => {
             ) : (
               <button 
                 onClick={stopCamera}
-                className="flex-1 bg-accent-red text-white py-3 rounded-lg font-semibold flex items-center justify-center"
+                className="flex-1 bg-accent-red text-white py-3 sm:py-4 rounded-xl font-semibold flex items-center justify-center text-sm sm:text-base active:scale-95 transition-transform shadow-lg"
               >
                 <span className="mr-2">⏹️</span>
                 Stop Camera
@@ -229,7 +231,7 @@ const WeatherPage: React.FC = () => {
             )}
             <button 
               onClick={resetCapture}
-              className="px-6 py-3 bg-primary-700 text-text-primary rounded-lg font-medium border border-primary-500"
+              className="px-4 sm:px-6 py-3 sm:py-4 bg-primary-700 text-text-primary rounded-xl font-medium border border-primary-500 text-sm sm:text-base active:scale-95 transition-transform"
             >
               Reset
             </button>
@@ -240,7 +242,7 @@ const WeatherPage: React.FC = () => {
         <button 
           onClick={runAnalysis}
           disabled={isAnalyzing || Object.keys(capturedImages).length === 0}
-          className="w-full bg-accent-blue text-white py-4 rounded-lg font-semibold text-lg mb-6 flex items-center justify-center disabled:opacity-50"
+          className="w-full bg-accent-blue text-white py-4 sm:py-5 rounded-xl font-semibold text-base sm:text-lg mb-4 sm:mb-6 flex items-center justify-center disabled:opacity-50 active:scale-95 transition-transform shadow-lg"
         >
           <span className="mr-2">🤖</span>
           {isAnalyzing ? 'Analyzing Sky Conditions...' : `Analyze Weather (${Object.keys(capturedImages).length} images)`}
