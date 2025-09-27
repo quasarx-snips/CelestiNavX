@@ -1,8 +1,52 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import json
+import uuid
 
 db = SQLAlchemy()
+
+# User model for authentication - Required for Replit Auth integration
+class User(db.Model):
+    __tablename__ = 'users'
+    
+    id = db.Column(db.String(100), primary_key=True, default=lambda: str(uuid.uuid4()))
+    email = db.Column(db.String(255), unique=True, nullable=True)
+    first_name = db.Column(db.String(100), nullable=True)
+    last_name = db.Column(db.String(100), nullable=True)
+    profile_image_url = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    
+    # Relationships
+    sessions = db.relationship('UserSession', backref='user', lazy=True, foreign_keys='UserSession.user_id')
+    measurements = db.relationship('Measurement', backref='user', lazy=True, foreign_keys='Measurement.user_id')
+    weather_readings = db.relationship('WeatherReading', backref='user', lazy=True, foreign_keys='WeatherReading.user_id')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'email': self.email,
+            'firstName': self.first_name,
+            'lastName': self.last_name,
+            'profileImageUrl': self.profile_image_url,
+            'createdAt': self.created_at.isoformat() if self.created_at else None,
+            'updatedAt': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+# Session storage table - Required for Replit Auth integration  
+class AuthSession(db.Model):
+    __tablename__ = 'auth_sessions'
+    
+    sid = db.Column(db.String(255), primary_key=True)
+    sess = db.Column(db.Text, nullable=False)  # JSON session data
+    expire = db.Column(db.DateTime, nullable=False)
+    
+    def to_dict(self):
+        return {
+            'sid': self.sid,
+            'sess': json.loads(self.sess) if self.sess else {},
+            'expire': self.expire.isoformat() if self.expire else None
+        }
 
 class Measurement(db.Model):
     __tablename__ = 'measurements'
@@ -19,6 +63,7 @@ class Measurement(db.Model):
     calculation_method = db.Column(db.String(10), default='solar')
     accuracy = db.Column(db.Float, nullable=True)
     notes = db.Column(db.Text, nullable=True)
+    user_id = db.Column(db.String(100), db.ForeignKey('users.id'), nullable=True)
     session_id = db.Column(db.Integer, db.ForeignKey('user_sessions.id'), nullable=True)
     
     def to_dict(self):
@@ -48,6 +93,7 @@ class WeatherReading(db.Model):
     sky_images = db.Column(db.Text, nullable=True)  # JSON string
     conditions = db.Column(db.Text, nullable=True)  # JSON string
     ai_analysis = db.Column(db.Text, nullable=True)  # JSON string
+    user_id = db.Column(db.String(100), db.ForeignKey('users.id'), nullable=True)
     session_id = db.Column(db.Integer, db.ForeignKey('user_sessions.id'), nullable=True)
     
     def to_dict(self):
@@ -73,6 +119,7 @@ class UserSession(db.Model):
     location_lng = db.Column(db.Float, nullable=True)
     location_accuracy = db.Column(db.Float, nullable=True)
     device_info = db.Column(db.Text, nullable=True)  # JSON string
+    user_id = db.Column(db.String(100), db.ForeignKey('users.id'), nullable=True)
     
     # Relationships
     measurements = db.relationship('Measurement', backref='session', lazy=True)

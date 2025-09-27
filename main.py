@@ -11,7 +11,9 @@ import json
 import uuid
 
 # Import database models
-from database_models import db, Measurement, WeatherReading, UserSession, AppStats
+from database_models import db, User, AuthSession, Measurement, WeatherReading, UserSession, AppStats
+# Import authentication
+from auth import replit_auth, require_auth
 
 # ====================================================================
 # --- FLASK SETUP AND DATABASE CONFIGURATION ---
@@ -19,14 +21,17 @@ from database_models import db, Measurement, WeatherReading, UserSession, AppSta
 # Flask instance must be named 'app'
 app = Flask(__name__)
 
-# Database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///celestinav.db'
+# Database configuration - Use PostgreSQL from environment
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///celestinav.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'celestinav-secret-key-' + str(uuid.uuid4()))
 
 # Initialize database
 db.init_app(app)
 migrate = Migrate(app, db)
+
+# Initialize authentication
+replit_auth.init_app(app)
 
 # Create tables
 with app.app_context():

@@ -1,19 +1,64 @@
 import React from 'react'
+import { useAuth } from '../hooks/useAuth'
 
 const HomePage: React.FC = () => {
+  const { user, logout } = useAuth()
+
   return (
     <div className="min-h-full bg-primary-800 p-6">
       <div className="max-w-md mx-auto">
-        {/* Header */}
+        {/* Header with user info */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <div className="w-12 h-12 bg-accent-blue rounded-full flex items-center justify-center mr-3">
               <span className="text-2xl">🧭</span>
             </div>
-            <h1 className="text-2xl font-bold text-text-primary">CelestiNav</h1>
+            <div className="text-left">
+              <h1 className="text-2xl font-bold text-text-primary">CelestiNav</h1>
+              {user && (
+                <p className="text-text-secondary text-sm">
+                  Welcome, {user.firstName || user.email || 'Navigator'}
+                </p>
+              )}
+            </div>
           </div>
           <p className="text-text-secondary">Offline Survival Navigation System</p>
         </div>
+
+        {/* User Profile Section */}
+        {user && (
+          <div className="bg-primary-600 rounded-lg p-4 border border-primary-500 mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                {user.profileImageUrl ? (
+                  <img 
+                    src={user.profileImageUrl} 
+                    alt="Profile" 
+                    className="w-10 h-10 rounded-full object-cover mr-3"
+                  />
+                ) : (
+                  <div className="w-10 h-10 bg-accent-blue rounded-full flex items-center justify-center mr-3">
+                    <span className="text-white font-semibold">
+                      {(user.firstName || user.email || 'U')[0].toUpperCase()}
+                    </span>
+                  </div>
+                )}
+                <div>
+                  <p className="text-text-primary font-medium">
+                    {user.firstName} {user.lastName}
+                  </p>
+                  <p className="text-text-secondary text-sm">{user.email}</p>
+                </div>
+              </div>
+              <button 
+                onClick={logout}
+                className="text-accent-red text-sm font-medium hover:text-red-400"
+              >
+                Sign Out
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Status Cards */}
         <div className="grid grid-cols-2 gap-4 mb-6">

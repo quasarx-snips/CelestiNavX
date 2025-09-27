@@ -3,7 +3,7 @@ modules = ["python-3.11", "nodejs-20", "python3"]
 
 [nix]
 channel = "stable-25_05"
-packages = ["libxcrypt", "pkg-config", "xsimd"]
+packages = ["cargo", "libiconv", "libxcrypt", "openssl", "pkg-config", "rustc", "xsimd"]
 
 [unitTest]
 language = "python3"
@@ -17,6 +17,7 @@ deploymentTarget = "cloudrun"
 
 [agent]
 expertMode = true
+integrations = ["javascript_log_in_with_replit:1.0.0"]
 
 [[ports]]
 localPort = 5000
@@ -29,6 +30,10 @@ externalPort = 8000
 [[ports]]
 localPort = 8080
 externalPort = 8080
+
+[[ports]]
+localPort = 43097
+externalPort = 3000
 
 [workflows]
 runButton = "Project"
