@@ -57,7 +57,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeTab, onTabCha
   ] as const
 
   return (
-    <nav className="glass border-t border-primary-600/40 shadow-card">
+    <nav className="glass border-t border-white/20 shadow-card-lg">
       <div className="flex justify-around items-center max-w-lg mx-auto px-3 py-2">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id
@@ -73,10 +73,10 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeTab, onTabCha
                 transition-all duration-300 cubic-bezier(0.4, 0, 0.2, 1)
                 transform-gpu hover:scale-105 active:scale-95
                 ${isActive 
-                  ? 'text-accent-orange bg-accent-orange/15 shadow-glow scale-105 elevated' 
+                  ? 'text-accent-primary bg-surface-50 shadow-card-hover scale-105 elevated' 
                   : isEmergency
-                    ? 'text-accent-red hover:text-red-300 hover:bg-accent-red/15 hover:shadow-card'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-primary-700/50 hover:shadow-card'
+                    ? 'text-accent-error hover:text-red-300 hover:bg-surface-50/20 hover:shadow-card'
+                    : 'text-text-inverse/70 hover:text-text-inverse hover:bg-surface-50/20 hover:shadow-card'
                 }
                 backdrop-blur-sm
               `}
@@ -108,21 +108,21 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeTab, onTabCha
               {isActive && (
                 <>
                   {/* Modern bottom indicator */}
-                  <div className="absolute -bottom-1.5 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-accent-orange rounded-full shadow-glow animate-scale-in" />
+                  <div className="absolute -bottom-1.5 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-gradient-primary rounded-full shadow-glow-purple animate-scale-in" />
                   
                   {/* Subtle background glow */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-accent-orange/8 to-transparent rounded-button animate-fade-in" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-accent-primary/10 to-transparent rounded-button animate-fade-in" />
                 </>
               )}
               
               {/* Hover indicator for inactive tabs */}
               {!isActive && (
-                <div className="absolute inset-0 bg-transparent rounded-button transition-all duration-300 ease-out group-hover:bg-primary-600/25 group-hover:backdrop-blur-sm" />
+                <div className="absolute inset-0 bg-transparent rounded-button transition-all duration-300 ease-out group-hover:bg-surface-50/30 group-hover:backdrop-blur-sm" />
               )}
               
               {/* Emergency pulse indicator */}
               {isEmergency && !isActive && (
-                <div className="absolute top-1.5 right-1.5 w-2 h-2 bg-accent-red rounded-full animate-pulse opacity-80 shadow-glow-strong" />
+                <div className="absolute top-1.5 right-1.5 w-2 h-2 bg-accent-error rounded-full animate-pulse opacity-80 shadow-glow-pink" />
               )}
             </button>
           )
@@ -130,7 +130,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeTab, onTabCha
       </div>
       
       {/* Bottom safe area for mobile devices */}
-      <div className="bg-gradient-to-t from-primary-950/80 to-transparent" style={{height: 'env(safe-area-inset-bottom)'}} />
+      <div className="bg-gradient-to-t from-black/20 to-transparent" style={{height: 'env(safe-area-inset-bottom)'}} />
     </nav>
   )
 }
