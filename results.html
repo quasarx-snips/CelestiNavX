@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- CRITICAL: Disable zoom and scrolling -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Solar Data Results</title>
+    <style>
+        /* Global Reset for predictable box sizing */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        /* Dark Theme Styles */
+        html, body {
+            margin: 0;
+            padding: 0;
+            /* CRITICAL: Ensure body fills the full viewport */
+            height: 100vh;
+            min-height: 100vh; 
+            /* CRITICAL: Disable scrolling on this page */
+            overflow: hidden; 
+        }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            /* CRITICAL: Center content symmetrically, both horizontally and vertically */
+            align-items: center; 
+            justify-content: center; 
+            background-color: #1a1a2e; 
+            color: #e9e9f0;
+            padding: 10px; 
+        }
+        .container { 
+            background-color: #2c3856; 
+            padding: 20px; 
+            border-radius: 18px; 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); 
+            text-align: center; 
+            width: 95%;
+            max-width: 400px; /* Reduced max width for map space */
+            flex-shrink: 1; 
+            overflow-y: hidden; 
+        }
+        h1 { 
+            color: #5d9eeb; 
+            margin-bottom: 20px; 
+            font-size: 1.6em; 
+            font-weight: 700;
+        }
+        
+        /* New: Vertical, Compact Card Stack */
+        .data-stack {
+            display: flex;
+            flex-direction: column; /* Vertical alignment */
+            gap: 8px; /* Compact spacing */
+            margin-bottom: 20px;
+        }
+        .data-card {
+            background-color: #3e4c76; /* Darker blue for prominence */
+            padding: 10px 15px; 
+            border-radius: 10px;
+            text-align: left;
+            border: 1px solid #5d9eeb;
+            display: flex;
+            justify-content: space-between; /* Label on left, Value on right */
+            align-items: center;
+        }
+        .data-label { 
+            font-weight: 500; 
+            color: #929ebd; 
+            font-size: 0.85em; /* Small label */
+            text-transform: uppercase;
+        }
+        .data-value {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em; /* Significantly smaller value font */
+            color: #2ecc71; 
+            font-weight: 700;
+        }
+        
+        /* Utility */
+        #loading-text { 
+            color: #f39c12; 
+            font-size: 0.9em;
+            display: none; 
+            margin: 5px 0 15px 0;
+        }
+        #error { 
+            color: #e74c3c; 
+            font-weight: bold; 
+            margin-top: 15px;
+            padding: 8px;
+            background-color: #4e2e2e;
+            border-radius: 5px;
+            display: none; 
+            font-size: 0.8em;
+            border: 1px solid #e74c3c;
+        }
+        .nav-button { 
+            margin-top: 20px; 
+            padding: 10px 20px; 
+            border: none; 
+            background-color: #5d9eeb; 
+            color: #1a1a2e; 
+            border-radius: 8px; 
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+        }
+        
+        /* Gemini Insight Styles */
+        #gemini-controls {
+            margin-top: 15px;
+        }
+        #insight-button {
+            padding: 8px 15px; 
+            font-size: 0.9em; 
+            border-radius: 8px;
+            background-color: #f39c12; 
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        #gemini-insight {
+            margin-top: 10px; 
+            padding: 12px; 
+            background-color: #3e4c76;
+            border: 1px solid #5d9eeb;
+            border-radius: 8px;
+            text-align: left;
+            font-size: 0.8em; 
+            line-height: 1.4;
+            max-height: 15vh; /* Reduced max height for more vertical space */
+            overflow-y: auto; 
+        }
+        .gemini-title {
+            font-size: 1em;
+            font-weight: 700;
+            color: #5d9eeb;
+            margin-bottom: 5px;
+        }
+        .citation-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 5px;
+            font-size: 0.7em;
+            color: #929ebd;
+        }
+        .citation-list a {
+            color: #2ecc71;
+            text-decoration: none;
+        }
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top: 3px solid #f39c12;
+            border-radius: 50%;
+            width: 15px;
+            height: 15px;
+            animation: spin 1s linear infinite;
+            margin: 5px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Celestial Fix Acquired</h1>
+        
+        <!-- Updated: Vertical Data Stack -->
+        <div class="data-stack">
+            <!-- 1. Pitch -->
+            <div class="data-card">
+                <span class="data-label">PITCH (ADJUSTED ALTITUDE)</span>
+                <p id="displayPitch" class="data-value">--</p>
+            </div>
+
+            <!-- 2. Heading -->
+            <div class="data-card">
+                <span class="data-label">HEADING (AZIMUTH)</span>
+                <p id="displayHeading" class="data-value">--</p>
+            </div>
+        </div>
+        
+        <p id="loading-text" style="display: block;">Calculating location...</p> 
+
+        <!-- Calculated Location Data -->
+        <div class="data-stack">
+            <!-- 3. Latitude -->
+            <div class="data-card">
+                <span class="data-label">CALCULATED LATITUDE</span>
+                <p id="displayLat" class="data-value">--</p>
+            </div>
+            
+            <!-- 4. Longitude -->
+            <div class="data-card">
+                <span class="data-label">CALCULATED LONGITUDE</span>
+                <p id="displayLon" class="data-value">--</p>
+            </div>
+        </div>
+        
+        <p id="error" id="errorElement"></p>
+
+        <!-- Gemini Feature Section -->
+        <div id="gemini-controls">
+            <button id="insight-button" onclick="generateInsight()" disabled>
+                Generate Location Insight ✨
+            </button>
+            <div id="gemini-insight" style="display: none;">
+                <!-- Insight content goes here -->
+            </div>
+        </div>
+        <!-- End Gemini Feature Section -->
+
+        <button onclick="window.location.href='/'" class="nav-button">
+            New Measurement (Home)
+        </button>
+    </div>
+
+    <script>
+        // Global variables for Gemini integration
+        let finalLat = null;
+        let finalLon = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const pitch = params.get('pitch');
+            const heading = params.get('heading');
+            
+            const displayPitch = document.getElementById('displayPitch');
+            const displayHeading = document.getElementById('displayHeading');
+            const displayLat = document.getElementById('displayLat');
+            const displayLon = document.getElementById('displayLon');
+            const errorElement = document.getElementById('error');
+            const loadingText = document.getElementById('loading-text'); 
+            
+            // 1. Display captured data immediately
+            displayPitch.textContent = pitch ? parseFloat(pitch).toFixed(4) + '°' : '--';
+            displayHeading.textContent = heading ? parseFloat(heading).toFixed(4) + '°' : '--';
+            
+            loadingText.style.display = 'block';
+
+            // --- API CALL FUNCTION WITH EXPONENTIAL BACKOFF ---
+
+            async function makeApiCall(url, options, maxRetries = 3) {
+                for (let i = 0; i < maxRetries; i++) {
+                    try {
+                        const response = await fetch(url, options);
+                        if (!response.ok) {
+                            if (response.status === 429 && i < maxRetries - 1) {
+                                const delay = Math.pow(2, i) * 1000;
+                                console.warn(`Rate limit hit, retrying in ${delay}ms...`);
+                                await new Promise(resolve => setTimeout(resolve, delay));
+                                continue;
+                            }
+                            const errorData = await response.json();
+                            throw new Error(errorData.error || `Server error: ${response.status}`);
+                        }
+                        return response;
+                    } catch (error) {
+                        if (i === maxRetries - 1) throw error;
+                    }
+                }
+            }
+
+            // --- FLASK CALCULATION ---
+            const flaskApiUrl = `/calculate_latlon?pitch=${pitch}&heading=${heading}`;
+
+            makeApiCall(flaskApiUrl, { method: 'GET' })
+                .then(response => response.json())
+                .then(data => {
+                    loadingText.style.display = 'none';
+                    
+                    finalLat = parseFloat(data.lat);
+                    finalLon = parseFloat(data.lon);
+
+                    displayLat.textContent = `${finalLat.toFixed(6)}°`;
+                    displayLon.textContent = `${finalLon.toFixed(6)}°`;
+                    
+                    document.getElementById('insight-button').disabled = false;
+                })
+                .catch(error => {
+                    loadingText.style.display = 'none';
+                    displayLat.textContent = 'FAILED';
+                    displayLon.textContent = 'FAILED';
+                    errorElement.textContent = `Calculation failed: ${error.message}.`;
+                    errorElement.style.display = 'block';
+                    document.getElementById('insight-button').disabled = true;
+                });
+        });
+
+        // --- GEMINI API INTEGRATION ---
+        
+        async function generateInsight() {
+            const insightDiv = document.getElementById('gemini-insight');
+            const insightButton = document.getElementById('insight-button');
+
+            if (finalLat === null || finalLon === null) {
+                insightDiv.innerHTML = '<p style="color: #e74c3c;">Location coordinates are not yet available.</p>';
+                insightDiv.style.display = 'block';
+                return;
+            }
+
+            insightDiv.innerHTML = '<div class="spinner"></div><p style="text-align:center; color: #929ebd;">Generating insight...</p>';
+            insightDiv.style.display = 'block';
+            insightButton.disabled = true;
+
+            const apiKey = ""; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            const systemPrompt = "You are an enthusiastic and knowledgeable cartography and astronomy expert. Given a precise geographical coordinate, describe the likely major geographical region (e.g., city, state, country, or biome) and provide one interesting fact about the history of navigation or astronomy relevant to that region. Be concise and engaging, and structure your output into two short paragraphs.";
+            
+            const userQuery = `Analyze these coordinates: Latitude: ${finalLat.toFixed(4)}, Longitude: ${finalLon.toFixed(4)}.`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                tools: [{ "google_search": {} }], 
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+            };
+
+            try {
+                const response = await makeApiCall(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    const text = candidate.content.parts[0].text;
+                    
+                    let sourcesHtml = '';
+                    const groundingMetadata = candidate.groundingMetadata;
+                    if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                        const sources = groundingMetadata.groundingAttributions
+                            .map(attribution => ({
+                                uri: attribution.web?.uri,
+                                title: attribution.web?.title,
+                            }))
+                            .filter(source => source.uri && source.title); 
+
+                        if (sources.length > 0) {
+                            sourcesHtml = '<ul class="citation-list">Sources:';
+                            sources.forEach((s, index) => {
+                                sourcesHtml += `<li><a href="${s.uri}" target="_blank">${s.title}</a></li>`;
+                            });
+                            sourcesHtml += '</ul>';
+                        }
+                    }
+
+                    insightDiv.innerHTML = `
+                        <div class="gemini-title">Geographic Insight:</div>
+                        <p>${text.replace(/\n\n/g, '</p><p>')}</p>
+                        ${sourcesHtml}
+                    `;
+                } else {
+                    insightDiv.innerHTML = '<p style="color: #e74c3c;">Could not generate insight. Please try again.</p>';
+                }
+
+            } catch (error) {
+                insightDiv.innerHTML = `<p style="color: #e74c3c;">API Error: ${error.message}</p>`;
+            } finally {
+                insightButton.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
+

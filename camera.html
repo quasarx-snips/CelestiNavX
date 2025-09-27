@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- CRITICAL: Disable zoom and ensure full-screen on mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Live Solar Viewfinder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* --- FULL SCREEN BASE SETUP --- */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            /* Hint to the browser for better performance on elements that will be constantly updated */
+            will-change: transform, content; 
+        }
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overscroll-behavior: contain; /* Prevent pull-to-refresh */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            display: flex; 
+            flex-direction: column;
+            justify-content: space-between; 
+            background-color: #000;
+            color: #e9e9f0;
+            overflow: hidden; 
+            min-height: 100vh;
+            user-select: none;
+        }
+
+        /* Full-screen video container (z-index 1 for background) */
+        .viewfinder-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1; 
+            overflow: hidden; 
+        }
+        #camera-feed {
+            width: 100%;
+            height: 100%;
+            /* Ensure the video covers the entire screen without stretching */
+            object-fit: cover; 
+            /* Optional: transform: scaleX(-1); /* Flip video horizontally if needed */
+        }
+        
+        /* --- CROSSHAIRS --- (z-index 10) */
+        .crosshairs {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .crosshairs::before, .crosshairs::after {
+            content: '';
+            position: absolute;
+            background-color: white; /* White crosshair */
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.6);
+        }
+        .crosshairs::before {
+            width: 2px;
+            height: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .crosshairs::after {
+            width: 100%;
+            height: 2px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        /* --- MINIMAL LIVE DATA OVERLAY --- (z-index 20) */
+        .live-data-overlay {
+            position: absolute;
+            top: 55%; /* Position slightly below the center crosshair */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            color: white;
+            text-shadow: 0 0 4px rgba(0,0,0,0.8);
+            background: rgba(0, 0, 0, 0.4); /* Subtle background for readability */
+            padding: 5px 12px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            align-items: center;
+            /* Added margin-top to avoid being too close to the center */
+            margin-top: 50px; 
+        }
+        .data-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .data-label {
+            font-size: 0.65em;
+            color: #ccc;
+            text-transform: uppercase;
+        }
+        .data-value {
+            margin: 2px 0;
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #2ecc71; /* Green color for live values */
+            font-family: 'Courier New', monospace;
+        }
+
+        /* --- CONTROLS AND PERMISSIONS --- (z-index 30) */
+        .controls-area {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            z-index: 30;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 20px 0 40px 0; /* Extra padding at the bottom for modern mobile gestures */
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0));
+        }
+        .shutter-button {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #e74c3c; 
+            border: 6px solid white; /* Prominent white ring */
+            box-shadow: 0 0 15px rgba(231, 76, 60, 0.8), 0 0 10px rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+        }
+        .shutter-button:active {
+            transform: scale(0.9);
+            background-color: #c0392b;
+        }
+        .nav-button {
+            padding: 10px 20px;
+            background-color: rgba(62, 76, 118, 0.7); /* Translucent dark blue */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.2s;
+            backdrop-filter: blur(4px);
+        }
+        .nav-button:hover {
+            background-color: #5d9eeb;
+        }
+        .nav-placeholder {
+            width: 100px; /* Balance the layout */
+        }
+
+        /* Permission Overlay */
+        .permission-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            z-index: 40; /* Highest z-index */
+            padding: 20px;
+        }
+        .permission-button {
+            padding: 15px 30px;
+            margin-top: 20px;
+            background-color: #2ecc71;
+            color: black;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 700;
+            box-shadow: 0 4px 10px rgba(46, 204, 113, 0.5);
+        }
+        .permission-overlay h2 {
+            font-size: 1.8em;
+            color: #5d9eeb;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="viewfinder-container">
+        <!-- 1. Live camera feed element -->
+        <video id="camera-feed" autoplay playsinline></video>
+        
+        <!-- 2. Central Crosshairs -->
+        <div class="crosshairs"></div>
+
+        <!-- 3. Minimal Live Data Overlay (Azimuth/Pitch) -->
+        <div class="live-data-overlay">
+            <div class="data-group">
+                <span class="data-label">PITCH</span>
+                <span id="pitch-display" class="data-value">0.00°</span>
+            </div>
+            <div class="data-group">
+                <span class="data-label">HEADING</span>
+                <span id="heading-display" class="data-value">0.00°</span>
+            </div>
+            <div class="data-group" style="margin-left: 15px;">
+                <span class="data-label">TIME</span>
+                <span id="time-display" class="data-value" style="color: #f39c12;">00:00:00</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 4. Controls Area (Fixed at Bottom) -->
+    <div class="controls-area">
+        <button class="nav-button" onclick="window.location.href='/'">
+            Home
+        </button>
+        <button id="capture-button" class="shutter-button" title="Capture Reading"></button>
+        <div class="nav-placeholder"></div> <!-- Spacer to center the shutter -->
+    </div>
+
+    <!-- 5. Permission overlay, shown initially -->
+    <div id="permission-overlay" class="permission-overlay">
+        <h2>Enable Camera & Motion</h2>
+        <p>This app requires access to your **Camera** and **Motion Sensors** for a precise solar fix.</p>
+        <button id="start-sensors" class="permission-button">Start Solar Finder</button>
+        <p style="margin-top: 20px; color: #f39c12; font-size: 0.9em;">
+            *If values don't update, ensure screen rotation lock is off and compass is calibrated.*
+        </p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Global Variables (Firebase & Environment) ---
+            // Note: These variables are included for environment compatibility but not used in the core logic here.
+            const apiKey = "" 
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+            // --- DOM Elements ---
+            const video = document.getElementById('camera-feed');
+            const overlay = document.getElementById('permission-overlay');
+            const startButton = document.getElementById('start-sensors');
+            const pitchDisplay = document.getElementById('pitch-display');
+            const headingDisplay = document.getElementById('heading-display');
+            const timeDisplay = document.getElementById('time-display');
+            const captureButton = document.getElementById('capture-button');
+
+            // --- State Variables (Updated by sensors, read by rAF) ---
+            let currentPitch = 0.0;
+            let currentHeading = 0.0;
+            let isSensorsActive = false; 
+
+            // --- 1. UTILITY FUNCTIONS ---
+
+            function updateTime() {
+                const now = new Date();
+                // Ensure time is updated using rAF as well, not just setInterval, 
+                // but setInterval for the data update is fine since it's only text.
+                timeDisplay.textContent = now.toLocaleTimeString([], { hour12: false });
+            }
+            setInterval(updateTime, 1000);
+            updateTime();
+
+            // --- 2. SENSOR ACCESS (Input: High Frequency) ---
+
+            function handleOrientation(event) {
+                isSensorsActive = true; 
+                
+                let rawPitch = event.beta; 
+                let rawHeading;
+
+                // Priority: Use webkitCompassHeading (iOS true north) if available
+                if (event.webkitCompassHeading !== undefined) {
+                    rawHeading = event.webkitCompassHeading;
+                } else if (event.alpha !== null) {
+                    // Fallback: Use standard alpha (needs calibration/correction on some devices)
+                    rawHeading = 360 - event.alpha; 
+                } else {
+                    return; 
+                }
+                
+                // Pitch adjustment: Normalize pitch to altitude-like value (-90 to +90).
+                let adjustedPitch = rawPitch - 90;
+                
+                // --- ONLY UPDATE STATE. NO DOM MANIPULATION HERE ---
+                currentPitch = adjustedPitch; 
+                currentHeading = (rawHeading + 360) % 360; 
+            }
+
+            // --- 3. UI Update Loop (Output: Low Latency via rAF) ---
+
+            function updateUI() {
+                // Read from state variables and update DOM simultaneously.
+                pitchDisplay.textContent = currentPitch.toFixed(2) + '°';
+                headingDisplay.textContent = currentHeading.toFixed(2) + '°';
+                
+                // If you had visual elements to move (like a sun dot), you'd update their transforms here.
+            }
+
+            function animate() {
+                if (isSensorsActive) {
+                    updateUI();
+                }
+                // Schedule the next update synchronized with the browser's repaint cycle
+                requestAnimationFrame(animate); 
+            }
+
+            function startSensorReading() {
+                if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    // iOS 13+ permission request
+                    DeviceOrientationEvent.requestPermission()
+                        .then(permissionState => {
+                            if (permissionState === 'granted') {
+                                window.addEventListener('deviceorientation', handleOrientation);
+                                // Start the visual update loop
+                                requestAnimationFrame(animate);
+                            } else {
+                                console.error('Sensor permission denied.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Sensor permission error:', error);
+                        });
+                } else {
+                    // Standard browsers
+                    window.addEventListener('deviceorientation', handleOrientation);
+                    // Start the visual update loop
+                    requestAnimationFrame(animate);
+                }
+            }
+
+            // --- 4. CAMERA ACCESS ---
+
+            function startCameraFeed() {
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    navigator.mediaDevices.getUserMedia({ 
+                        video: { 
+                            facingMode: 'environment' // Prioritize rear camera
+                        } 
+                    })
+                    .then(stream => {
+                        video.srcObject = stream;
+                        video.play();
+                    })
+                    .catch(err => {
+                        console.error("Camera access failed:", err);
+                    });
+                } else {
+                    console.error("getUserMedia not supported on this device.");
+                }
+            }
+            
+            // --- 5. START BUTTON HANDLER ---
+
+            startButton.addEventListener('click', () => {
+                startCameraFeed();
+                startSensorReading();
+                // Hide overlay after granting permissions
+                overlay.style.display = 'none'; 
+            });
+
+            // --- 6. CAPTURE LOGIC ---
+
+            captureButton.addEventListener('click', () => {
+                const finalPitch = currentPitch; 
+                const finalHeading = currentHeading;
+                
+                if (!isSensorsActive) { 
+                     // Simple custom feedback instead of alert/confirm
+                     pitchDisplay.textContent = 'NO SENSOR DATA';
+                     headingDisplay.textContent = 'NO SENSOR DATA';
+                     return;
+                }
+
+                // If this were a real application, you'd save this data to Firestore here.
+                // For now, we simulate navigation.
+                console.log(`Captured Pitch: ${finalPitch}, Captured Heading: ${finalHeading}`);
+                
+                // In a real environment, you'd show a confirmation modal or save data.
+                // Since `alert()` is forbidden, let's give quick visual feedback.
+                captureButton.style.backgroundColor = '#1abc9c'; // Change to green briefly
+                setTimeout(() => {
+                    captureButton.style.backgroundColor = '#e74c3c'; // Revert to red
+                }, 250);
+            });
+        });
+    </script>
+</body>
+</html>
+
