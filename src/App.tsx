@@ -58,7 +58,7 @@ function App() {
     })()
     
     return (
-      <div key={activeTab} className="page-transition">
+      <div key={activeTab} className="page-transition page-content">
         {pageComponent}
       </div>
     )

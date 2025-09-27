@@ -127,7 +127,7 @@ const WeatherPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen p-4 page-transition">
+    <div className="p-4">
       <div className="max-w-md mx-auto space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">

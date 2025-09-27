@@ -91,6 +91,12 @@ html, body {
   padding: 0;
 }
 
+/* Ensure pages have proper bottom padding for navigation */
+.page-content {
+  padding-bottom: 80px; /* Space for bottom navigation */
+  min-height: calc(100vh - 80px);
+}
+
 /* Light theme specific styles */
 :root body {
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);

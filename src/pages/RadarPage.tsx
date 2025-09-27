@@ -2,7 +2,7 @@ import React from 'react'
 
 const RadarPage: React.FC = () => {
   return (
-    <div className="min-h-screen p-4 page-transition overflow-x-hidden">
+    <div className="p-4 overflow-x-hidden">
       <div className="max-w-md mx-auto space-y-4 overflow-x-hidden">
         {/* Header */}
         <div className="flex items-center justify-between">
