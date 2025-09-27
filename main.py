@@ -12,8 +12,8 @@ import uuid
 
 # Import database models
 from database_models import db, User, AuthSession, Measurement, WeatherReading, UserSession, AppStats
-# Import authentication
-from auth import replit_auth, require_auth
+# Import authentication - DISABLED for direct access
+# from auth import replit_auth, require_auth
 
 # ====================================================================
 # --- FLASK SETUP AND DATABASE CONFIGURATION ---
@@ -30,8 +30,8 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'celestinav-secret-key-'
 db.init_app(app)
 migrate = Migrate(app, db)
 
-# Initialize authentication
-replit_auth.init_app(app)
+# Initialize authentication - DISABLED for direct access
+# replit_auth.init_app(app)
 
 # Create tables
 with app.app_context():

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import BottomNavigation from './components/BottomNavigation'
 import HomePage from './pages/HomePage'
 import CelestiNavPage from './pages/CelestiNavPage'
@@ -14,7 +14,7 @@ type TabType = 'home' | 'celestinav' | 'weather' | 'radar' | 'sos'
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('home')
-  const { isInitialized, error } = useDatabase()
+  const { error } = useDatabase()
   const { isAuthenticated, isLoading } = useAuth()
 
   useEffect(() => {

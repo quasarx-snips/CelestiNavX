@@ -10,43 +10,27 @@ interface User {
 }
 
 export function useAuth() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [user, setUser] = useState<User | null>(null)
+  // Direct access mode - no authentication required
+  const [isAuthenticated] = useState(true)
+  const [isLoading] = useState(false)
+  const [user] = useState<User | null>({
+    id: 'guest-user',
+    email: 'guest@celestinav.local',
+    first_name: 'Guest',
+    last_name: 'User'
+  })
 
   useEffect(() => {
-    checkAuthStatus()
+    // Skip authentication check - direct access enabled
   }, [])
 
   const checkAuthStatus = async () => {
-    try {
-      const response = await fetch('/api/auth/user')
-      if (response.ok) {
-        const userData = await response.json()
-        setUser(userData)
-        setIsAuthenticated(true)
-      } else {
-        setIsAuthenticated(false)
-        setUser(null)
-      }
-    } catch (error) {
-      console.error('Auth check failed:', error)
-      setIsAuthenticated(false)
-      setUser(null)
-    } finally {
-      setIsLoading(false)
-    }
+    // No-op - authentication disabled
   }
 
   const logout = async () => {
-    try {
-      await fetch('/api/logout')
-      setIsAuthenticated(false)
-      setUser(null)
-      window.location.href = '/'
-    } catch (error) {
-      console.error('Logout failed:', error)
-    }
+    // No-op - authentication disabled
+    console.log('Logout disabled in direct access mode')
   }
 
   return {
