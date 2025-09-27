@@ -1,15 +1,23 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import BottomNavigation from './components/BottomNavigation'
 import HomePage from './pages/HomePage'
 import CelestiNavPage from './pages/CelestiNavPage'
 import WeatherPage from './pages/WeatherPage'
 import RadarPage from './pages/RadarPage'
 import SOSPage from './pages/SOSPage'
+import { useDatabase } from './hooks/useDatabase'
 
 type TabType = 'home' | 'celestinav' | 'weather' | 'radar' | 'sos'
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('home')
+  const { isInitialized, error } = useDatabase()
+
+  useEffect(() => {
+    if (error) {
+      console.error('Database initialization error:', error)
+    }
+  }, [error])
 
   const renderPage = () => {
     switch (activeTab) {

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react'
+import { useMeasurements } from '../hooks/useDatabase'
+import { apiService } from '../services/api'
 
 const CelestiNavPage: React.FC = () => {
   const [mode, setMode] = useState<'gps' | 'solar'>('solar')
@@ -8,6 +10,85 @@ const CelestiNavPage: React.FC = () => {
   const [pressure, setPressure] = useState(1013.25)
   const [temperature, setTemperature] = useState(15)
   const [isCapturing, setIsCapturing] = useState(false)
+  const [isCalculating, setIsCalculating] = useState(false)
+  const [lastResult, setLastResult] = useState<{ lat: number; lng: number } | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [sensorPermission, setSensorPermission] = useState(false)
+
+  const { measurements, saveMeasurement } = useMeasurements()
+
+  // Device orientation sensor handling
+  useEffect(() => {
+    const handleOrientation = (event: DeviceOrientationEvent) => {
+      if (event.beta !== null && event.alpha !== null) {
+        // Adjust pitch to solar altitude (device pointing up = positive altitude)
+        setPitch(event.beta - 90)
+        
+        // Handle compass heading
+        if (event.webkitCompassHeading !== undefined) {
+          setHeading(event.webkitCompassHeading)
+        } else if (event.alpha !== null) {
+          setHeading(360 - event.alpha)
+        }
+      }
+    }
+
+    const requestSensorPermission = async () => {
+      if (typeof DeviceOrientationEvent !== 'undefined' && 
+          typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+        try {
+          const permission = await (DeviceOrientationEvent as any).requestPermission()
+          if (permission === 'granted') {
+            window.addEventListener('deviceorientation', handleOrientation)
+            setSensorPermission(true)
+          }
+        } catch (error) {
+          console.error('Sensor permission error:', error)
+        }
+      } else {
+        // For non-iOS devices
+        window.addEventListener('deviceorientation', handleOrientation)
+        setSensorPermission(true)
+      }
+    }
+
+    requestSensorPermission()
+
+    return () => {
+      window.removeEventListener('deviceorientation', handleOrientation)
+    }
+  }, [])
+
+  const calculatePosition = async () => {
+    if (!sensorPermission) {
+      setError('Device orientation permission required')
+      return
+    }
+
+    setIsCalculating(true)
+    setError(null)
+
+    try {
+      // Call backend API
+      const result = await apiService.calculateSolarPosition({
+        pitch,
+        heading,
+        elevation,
+        pressure,
+        temperature
+      })
+
+      // The backend already saved the measurement during calculation
+      // Just update our local state with the result
+
+      setLastResult({ lat: result.latitude, lng: result.longitude })
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Calculation failed')
+    } finally {
+      setIsCalculating(false)
+    }
+  }
 
   return (
     <div className="min-h-full bg-primary-800 p-4">
@@ -125,9 +206,100 @@ const CelestiNavPage: React.FC = () => {
               className="w-full bg-primary-700 border border-primary-500 rounded-lg px-3 py-2 text-text-primary"
             />
           </div>
-          <button className="w-full bg-accent-blue text-white py-3 rounded-lg font-semibold">
-            Calculate Position
+          <button 
+            onClick={calculatePosition}
+            disabled={isCalculating || !sensorPermission}
+            className="w-full bg-accent-blue text-white py-3 rounded-lg font-semibold disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center"
+          >
+            {isCalculating ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Calculating...
+              </>
+            ) : (
+              'Calculate Position'
+            )}
           </button>
+        </div>
+
+        {/* Results Section */}
+        {lastResult && (
+          <div className="bg-accent-green rounded-lg p-4 mb-6">
+            <h3 className="text-white font-semibold mb-3 flex items-center">
+              <span className="mr-2">🎯</span>
+              Calculated Position
+            </h3>
+            <div className="text-white text-sm space-y-2">
+              <div className="flex justify-between">
+                <span>Latitude:</span>
+                <span className="font-mono">{lastResult.lat.toFixed(6)}°</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Longitude:</span>
+                <span className="font-mono">{lastResult.lng.toFixed(6)}°</span>
+              </div>
+              <div className="text-green-200 text-xs mt-2">
+                Position saved to local database ✓
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Error Display */}
+        {error && (
+          <div className="bg-accent-red rounded-lg p-4 mb-6">
+            <h3 className="text-white font-semibold mb-2 flex items-center">
+              <span className="mr-2">❌</span>
+              Error
+            </h3>
+            <p className="text-white text-sm">{error}</p>
+          </div>
+        )}
+
+        {/* Recent Measurements */}
+        {measurements.length > 0 && (
+          <div className="bg-primary-600 rounded-lg p-4 mb-6 border border-primary-500">
+            <h3 className="text-text-primary font-semibold mb-3 flex items-center">
+              <span className="mr-2">📋</span>
+              Recent Measurements ({measurements.length})
+            </h3>
+            <div className="space-y-2 max-h-32 overflow-y-auto">
+              {measurements.slice(0, 3).map((measurement) => (
+                <div key={measurement.id} className="text-sm bg-primary-700 rounded p-2">
+                  <div className="flex justify-between text-text-primary">
+                    <span>{measurement.latitude?.toFixed(4)}°, {measurement.longitude?.toFixed(4)}°</span>
+                    <span className="text-text-secondary">
+                      {new Date(measurement.timestamp).toLocaleTimeString()}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Sensor Status */}
+        <div className="bg-primary-600 rounded-lg p-4 mb-6 border border-primary-500">
+          <h3 className="text-text-primary font-semibold mb-3 flex items-center">
+            <span className="mr-2">📱</span>
+            Sensor Status
+          </h3>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-text-secondary">Device Orientation</span>
+              <span className={sensorPermission ? 'text-accent-green' : 'text-accent-red'}>
+                {sensorPermission ? 'Active' : 'Permission Required'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-text-secondary">Current Pitch</span>
+              <span className="text-text-primary font-mono">{pitch.toFixed(1)}°</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-text-secondary">Current Heading</span>
+              <span className="text-text-primary font-mono">{heading.toFixed(1)}°</span>
+            </div>
+          </div>
         </div>
 
         {/* How to Use */}
@@ -137,13 +309,13 @@ const CelestiNavPage: React.FC = () => {
             How to Use
           </h3>
           <div className="text-white text-sm space-y-2">
-            <p>1. Point your device camera directly at the sun</p>
-            <p>2. Ensure you have device orientation permissions</p>
-            <p>3. Adjust environmental parameters if needed</p>
+            <p>1. Allow device orientation permissions when prompted</p>
+            <p>2. Point your device toward the sun (watch sensor readings)</p>
+            <p>3. Adjust environmental parameters if known</p>
             <p>4. Click Calculate Position to get your coordinates</p>
           </div>
           <div className="mt-3 p-2 bg-orange-700 rounded text-white text-xs">
-            <p>⚠️ <strong>Never look directly at the sun.</strong> Use appropriate solar filters or indirect observation methods.</p>
+            <p>⚠️ <strong>Never look directly at the sun.</strong> Use the device shadow or indirect observation methods.</p>
           </div>
         </div>
       </div>
