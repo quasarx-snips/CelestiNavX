@@ -24,23 +24,33 @@ export const useMeasurements = () => {
   const loadMeasurements = async (limit = 50) => {
     setLoading(true)
     try {
-      // Try to load from backend first
+      // Load from SQL database backend
       const response = await fetch(`/api/measurements?limit=${limit}`)
       if (response.ok) {
         const result = await response.json()
-        setMeasurements(result.data)
+        // Transform backend data to match frontend interface
+        const transformedMeasurements = result.data.map((m: any) => ({
+          id: m.id.toString(),
+          timestamp: new Date(m.timestamp).getTime(),
+          latitude: m.latitude,
+          longitude: m.longitude,
+          pitch: m.pitch,
+          heading: m.heading,
+          elevation: m.elevation,
+          pressure: m.pressure,
+          temperature: m.temperature,
+          calculationMethod: m.calculationMethod,
+          accuracy: m.accuracy,
+          notes: m.notes
+        }))
+        setMeasurements(transformedMeasurements)
       } else {
-        throw new Error('Backend load failed')
+        console.error('Failed to load measurements from backend:', response.statusText)
+        setMeasurements([])
       }
     } catch (error) {
-      console.warn('Failed to load from backend, using local storage:', error)
-      // Fallback to local storage
-      try {
-        const data = await offlineDB.getMeasurements(limit)
-        setMeasurements(data)
-      } catch (localError) {
-        console.error('Failed to load measurements from local storage:', localError)
-      }
+      console.error('Failed to load measurements from backend:', error)
+      setMeasurements([])
     } finally {
       setLoading(false)
     }
@@ -48,48 +58,23 @@ export const useMeasurements = () => {
 
   const saveMeasurement = async (measurement: Omit<Measurement, 'id' | 'timestamp'>) => {
     try {
-      // Save to backend database first
-      const backendData = await fetch('/api/measurements', {
+      // Save to SQL database backend
+      const response = await fetch('/api/measurements', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(measurement)
       })
 
-      if (backendData.ok) {
-        const result = await backendData.json()
-        const savedMeasurement = result.data
-
-        // Also save to local IndexedDB as backup
-        const localMeasurement: Measurement = {
-          id: `local_${savedMeasurement.id}`,
-          timestamp: Date.parse(savedMeasurement.timestamp),
-          ...measurement
-        }
-
-        try {
-          await offlineDB.saveMeasurement(localMeasurement)
-        } catch (localError) {
-          console.warn('Failed to save to local storage:', localError)
-        }
-
-        await loadMeasurements()
-        return savedMeasurement
+      if (response.ok) {
+        const result = await response.json()
+        await loadMeasurements() // Reload measurements from database
+        return result.data
       } else {
-        throw new Error('Backend save failed')
+        throw new Error('Failed to save measurement to database')
       }
     } catch (error) {
       console.error('Failed to save measurement:', error)
-
-      // Fallback to local storage if backend fails
-      const localMeasurement: Measurement = {
-        id: `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        timestamp: Date.now(),
-        ...measurement
-      }
-
-      await offlineDB.saveMeasurement(localMeasurement)
-      await loadMeasurements()
-      return localMeasurement
+      throw error
     }
   }
 

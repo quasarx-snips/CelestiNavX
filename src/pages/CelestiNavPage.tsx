@@ -279,8 +279,17 @@ const CelestiNavPage: React.FC = () => {
         </div>
       )}
 
-      {/* Shutter Button - Above Bottom Navigation */}
-      <div className="absolute bottom-32 left-1/2 -translate-x-1/2 z-20">
+      {/* Camera Controls - Bottom Center */}
+      <div className="absolute bottom-32 left-1/2 -translate-x-1/2 z-20 flex items-center gap-6">
+        {/* Database Button - Left of Shutter */}
+        <button
+          onClick={toggleDatabase}
+          className="w-12 h-12 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-lg border border-white/30 active:scale-95 transition-transform"
+        >
+          📊
+        </button>
+        
+        {/* Shutter Button */}
         <button
           onClick={captureReading}
           disabled={isCalculating || !sensorPermission}
@@ -296,14 +305,8 @@ const CelestiNavPage: React.FC = () => {
         </button>
       </div>
 
-      {/* Settings and Database Buttons - Bottom Right */}
-      <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-2">
-        <button
-          onClick={toggleDatabase}
-          className="w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-sm border border-white/30 active:scale-95 transition-transform"
-        >
-          📊
-        </button>
+      {/* Settings Button - Bottom Right */}
+      <div className="absolute bottom-4 right-4 z-10">
         <button
           onClick={() => {
             // Simple toggle for basic environmental settings
