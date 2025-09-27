@@ -244,9 +244,50 @@ const CelestiNavPage: React.FC = () => {
         </div>
 
         {/* Main Metric Cards */}
-        {mode === 'solar' ? (
+        {/* Full Screen Camera View for Solar Mode */}
+        {mode === 'solar' && isCameraActive ? (
+          <div className="fixed inset-0 bg-black z-40">
+            <video
+              ref={videoRef}
+              className="w-full h-full object-cover"
+              autoPlay
+              playsInline
+              muted
+            />
+            
+            {/* Crosshair */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="relative">
+                {/* Main crosshair */}
+                <div className="w-12 h-12 border-2 border-accent-orange rounded-full opacity-80"></div>
+                <div className="absolute top-1/2 left-1/2 w-6 h-0.5 bg-accent-orange -translate-x-1/2 -translate-y-1/2"></div>
+                <div className="absolute top-1/2 left-1/2 w-0.5 h-6 bg-accent-orange -translate-x-1/2 -translate-y-1/2"></div>
+                
+                {/* Minimal pitch and azimuth display below crosshair */}
+                <div className="absolute top-8 left-1/2 -translate-x-1/2 text-center text-white">
+                  <div className="bg-black/60 backdrop-blur-sm rounded-lg px-3 py-1.5 text-sm font-medium">
+                    <div className="flex gap-4">
+                      <span>P: {pitch.toFixed(1)}°</span>
+                      <span>A: {heading.toFixed(1)}°</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Exit camera button */}
+            <button 
+              onClick={stopCamera}
+              className="absolute top-4 right-4 bg-accent-red/80 hover:bg-accent-red text-white rounded-full p-3 backdrop-blur-sm transition-all z-50"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        ) : mode === 'solar' ? (
           <>
-            {/* Camera Pitch Card */}
+            {/* Solar Mode - Camera Pitch Card */}
             <div className="info-card text-center animate-fade-in">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-text-primary font-bold text-sm">CAMERA PITCH</h3>
@@ -310,41 +351,19 @@ const CelestiNavPage: React.FC = () => {
           </>
         )}
 
-        {/* Camera/GPS Status Card */}
-        {mode === 'solar' && (
+        {/* Camera Status Card - Only show when not in full screen */}
+        {mode === 'solar' && !isCameraActive && (
           <div className="info-card animate-slide-up">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-text-primary font-bold text-sm">CAMERA STATUS</h3>
               <span className={`status-dot ${isCameraActive ? 'status-online' : 'status-offline'}`}></span>
             </div>
-            {isCameraActive ? (
-              <div className="space-y-3">
-                <div className="bg-black rounded-lg aspect-video relative overflow-hidden">
-                  <video
-                    ref={videoRef}
-                    className="w-full h-full object-cover"
-                    autoPlay
-                    playsInline
-                    muted
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-8 h-8 border border-accent-green rounded-full"></div>
-                    <div className="absolute w-4 h-0.5 bg-accent-green"></div>
-                    <div className="absolute w-0.5 h-4 bg-accent-green"></div>
-                  </div>
-                </div>
-                <button onClick={stopCamera} className="btn-danger w-full text-sm py-2">
-                  Stop Camera
-                </button>
-              </div>
-            ) : (
-              <div className="text-center py-4">
-                <button onClick={startCamera} className="btn-primary w-full text-sm py-2">
-                  <span className="mr-2">📷</span>
-                  Start Camera
-                </button>
-              </div>
-            )}
+            <div className="text-center py-4">
+              <button onClick={startCamera} className="btn-primary w-full text-sm py-2">
+                <span className="mr-2">📷</span>
+                Start Camera
+              </button>
+            </div>
           </div>
         )}
 

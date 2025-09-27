@@ -65,11 +65,13 @@ function App() {
   }
 
   return (
-    <div className="h-screen w-full bg-primary-950 text-text-primary flex flex-col overflow-hidden">
-      <main className="flex-1 overflow-auto scrollable">
+    <div className="h-screen w-full bg-primary-950 text-text-primary flex flex-col">
+      <main className="flex-1 overflow-auto scrollable pb-20">
         {renderPage()}
       </main>
-      <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+      <div className="fixed bottom-0 left-0 right-0 z-50">
+        <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+      </div>
     </div>
   )
 }
