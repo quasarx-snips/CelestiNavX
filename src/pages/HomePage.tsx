@@ -10,6 +10,14 @@ interface NavigationButtonProps {
   delay?: number
 }
 
+interface SensorData {
+  name: string
+  status: 'active' | 'inactive' | 'error'
+  value?: string | number
+  unit?: string
+  lastUpdate?: number
+}
+
 const NavigationButton: React.FC<NavigationButtonProps> = ({ onClick, className, children, delay = 0 }) => {
   return (
     <button 
@@ -26,6 +34,17 @@ const HomePage: React.FC = () => {
   const { user, logout } = useAuth()
   const [currentTime, setCurrentTime] = useState(new Date())
   const [mounted, setMounted] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+  const [sensors, setSensors] = useState<SensorData[]>([
+    { name: 'GPS', status: 'active', value: 'Ready', lastUpdate: Date.now() },
+    { name: 'Compass', status: 'inactive', value: '---°', unit: '°' },
+    { name: 'Accelerometer', status: 'active', value: '9.8', unit: 'm/s²', lastUpdate: Date.now() },
+    { name: 'Gyroscope', status: 'active', value: '0.1', unit: 'rad/s', lastUpdate: Date.now() },
+    { name: 'Barometer', status: 'inactive', value: '---', unit: 'hPa' },
+    { name: 'Magnetometer', status: 'error', value: 'Error', lastUpdate: Date.now() - 30000 },
+    { name: 'Proximity', status: 'active', value: 'Far', lastUpdate: Date.now() },
+    { name: 'Light Sensor', status: 'active', value: '450', unit: 'lux', lastUpdate: Date.now() }
+  ])
 
   // Auto-update time every second
   useEffect(() => {
@@ -37,6 +56,32 @@ const HomePage: React.FC = () => {
     return () => clearInterval(timer)
   }, [])
 
+  // Simulate sensor updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSensors(prev => prev.map(sensor => {
+        if (sensor.status === 'active') {
+          let newValue = sensor.value
+          switch (sensor.name) {
+            case 'Accelerometer':
+              newValue = (9.8 + (Math.random() - 0.5) * 0.2).toFixed(1)
+              break
+            case 'Gyroscope':
+              newValue = (Math.random() * 0.2).toFixed(2)
+              break
+            case 'Light Sensor':
+              newValue = Math.floor(400 + Math.random() * 200)
+              break
+          }
+          return { ...sensor, value: newValue, lastUpdate: Date.now() }
+        }
+        return sensor
+      }))
+    }, 2000)
+
+    return () => clearInterval(interval)
+  }, [])
+
   if (!mounted) {
     return (
       <div className="p-4 min-h-screen flex items-center justify-center">
@@ -45,6 +90,24 @@ const HomePage: React.FC = () => {
         </div>
       </div>
     )
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'bg-green-500'
+      case 'inactive': return 'bg-yellow-500'
+      case 'error': return 'bg-red-500'
+      default: return 'bg-gray-500'
+    }
+  }
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'active': return 'ACTIVE'
+      case 'inactive': return 'OFFLINE'
+      case 'error': return 'ERROR'
+      default: return 'UNKNOWN'
+    }
   }
 
   return (
@@ -58,21 +121,34 @@ const HomePage: React.FC = () => {
 
       <div className="relative z-10 p-6">
         <div className="max-w-md mx-auto space-y-6">
-          {/* Enhanced Header */}
+          {/* Enhanced Header with Settings */}
           <div className="text-center mb-6 animate-fade-in">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex-1"></div>
+              <button
+                onClick={() => setShowSettings(!showSettings)}
+                className="p-2 rounded-xl transition-all duration-200 shadow-card hover:shadow-card-md hover:scale-105 active:scale-95"
+                style={{
+                  background: 'var(--surface-200)',
+                  color: 'var(--text-primary)'
+                }}
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                </svg>
+              </button>
+              
               <div className="text-center flex-1">
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-primary rounded-xl shadow-lg mb-3 animate-bounce-subtle">
                   <span className="text-xl">🛰️</span>
                 </div>
-                <h1 className="text-2xl font-black text-white drop-shadow-lg">
+                <h1 className="text-2xl font-black" style={{ color: 'var(--text-primary)' }}>
                   CelestiNav
                 </h1>
-                <p className="text-white/80 text-xs font-medium mt-1">
+                <p style={{ color: 'var(--text-secondary)' }} className="text-xs font-medium mt-1">
                   Professional Navigation System
                 </p>
               </div>
+              
               <div className="flex flex-col items-end gap-2 flex-1">
                 <ThemeToggle />
                 <div className="flex items-center">
@@ -81,6 +157,81 @@ const HomePage: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* Settings Panel */}
+          {showSettings && (
+            <div className="card p-4 backdrop-blur-sm border border-white/20 animate-slide-up bg-black/40 mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+                  System Settings
+                </h3>
+                <button
+                  onClick={() => setShowSettings(false)}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                  </svg>
+                </button>
+              </div>
+
+              {/* Sensor Status Grid */}
+              <div className="mb-4">
+                <h4 className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
+                  Sensor Status
+                </h4>
+                <div className="grid grid-cols-2 gap-2">
+                  {sensors.map((sensor, index) => (
+                    <div key={sensor.name} className="bg-gray-800/50 rounded-lg p-2 border border-gray-700/50">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>
+                          {sensor.name}
+                        </span>
+                        <span className={`w-2 h-2 rounded-full ${getStatusColor(sensor.status)} animate-pulse`}></span>
+                      </div>
+                      <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                        {typeof sensor.value === 'number' ? sensor.value.toFixed(2) : sensor.value}
+                        {sensor.unit && ` ${sensor.unit}`}
+                      </div>
+                      <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                        {getStatusText(sensor.status)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Additional Settings */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+                    Auto-sync Data
+                  </span>
+                  <div className="toggle-group">
+                    <div className="toggle-option toggle-active">ON</div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+                    High Accuracy Mode
+                  </span>
+                  <div className="toggle-group">
+                    <div className="toggle-option toggle-active">ON</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+                    Power Saving
+                  </span>
+                  <div className="toggle-group">
+                    <div className="toggle-option toggle-inactive">OFF</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Professional Status Cards */}
           <div className="grid grid-cols-2 gap-3 mb-5">
@@ -106,7 +257,7 @@ const HomePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Enhanced User Profile */}
+          {/* Enhanced User Profile - Removed Active Session */}
           {user && (
             <div className="card p-4 backdrop-blur-sm border border-white/20 animate-fade-in bg-black/40" style={{ animationDelay: '300ms' }}>
               <div className="flex items-center justify-between">
@@ -131,14 +282,12 @@ const HomePage: React.FC = () => {
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="text-white font-bold text-sm truncate">
+                    <p className="font-bold text-sm truncate" style={{ color: 'var(--text-primary)' }}>
                       {user.first_name} {user.last_name}
                     </p>
-                    <p className="text-white/70 text-xs truncate">{user.email}</p>
-                    <div className="flex items-center mt-1">
-                      <span className="status-dot bg-green-500 mr-1.5"></span>
-                      <p className="text-green-400 text-xs font-medium">Active Session</p>
-                    </div>
+                    <p className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>
+                      {user.email}
+                    </p>
                   </div>
                 </div>
                 <button 
@@ -154,11 +303,11 @@ const HomePage: React.FC = () => {
           {/* Professional Status Dashboard */}
           <div className="card p-4 backdrop-blur-sm border border-white/20 animate-slide-up bg-black/40" style={{ animationDelay: '400ms' }}>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-bold text-white flex items-center">
+              <h3 className="text-lg font-bold flex items-center" style={{ color: 'var(--text-primary)' }}>
                 <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
                 System Status
               </h3>
-              <div className="text-white/70 text-xs font-mono">
+              <div className="text-xs font-mono" style={{ color: 'var(--text-secondary)' }}>
                 {currentTime.toLocaleTimeString([], { hour12: false })}
               </div>
             </div>
@@ -235,9 +384,11 @@ const HomePage: React.FC = () => {
           <div className="text-center space-y-2 pt-3 animate-fade-in" style={{ animationDelay: '900ms' }}>
             <div className="flex items-center justify-center">
               <span className="status-dot status-online mr-2"></span>
-              <span className="text-white/80 text-xs font-medium">All systems operational</span>
+              <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
+                All systems operational
+              </span>
             </div>
-            <div className="flex items-center justify-center space-x-3 text-xs text-white/60">
+            <div className="flex items-center justify-center space-x-3 text-xs" style={{ color: 'var(--text-muted)' }}>
               <span>Last sync: {currentTime.toLocaleDateString()}</span>
               <span>•</span>
               <span>Build: 2.1.0</span>
