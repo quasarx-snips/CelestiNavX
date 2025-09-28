@@ -11,17 +11,19 @@ import LandingPage from './pages/LandingPage'
 import { useDatabase } from './hooks/useDatabase'
 import { useAuth } from './hooks/useAuth'
 
-type TabType = 'home' | 'celestinav' | 'weather' | 'weather-analysis' | 'radar' | 'sos'
+type TabType = 'home' | 'celestinav' | 'weather' | 'radar' | 'sos'
+type ExtendedTabType = TabType | 'weather-analysis'
 
 function App() {
-  const [activeTab, setActiveTab] = useState<TabType>('home')
+  const [activeTab, setActiveTab] = useState<ExtendedTabType>('home')
   const { error } = useDatabase()
   const { isAuthenticated, isLoading } = useAuth()
 
   // Handle hash-based navigation
   useEffect(() => {
     const handleHashChange = () => {
-      const hash = window.location.hash.replace('#', '') as TabType
+      // Properly parse hash - remove # and optional leading /
+      const hash = window.location.hash.replace(/^#\/?/, '') as ExtendedTabType
       if (['home', 'celestinav', 'weather', 'weather-analysis', 'radar', 'sos'].includes(hash)) {
         setActiveTab(hash)
       }
@@ -93,7 +95,10 @@ function App() {
         {renderPage()}
       </main>
       <div className="fixed bottom-0 left-0 right-0 z-50">
-        <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+        <BottomNavigation 
+          activeTab={activeTab === 'weather-analysis' ? 'weather' : activeTab as TabType} 
+          onTabChange={(tab: TabType) => setActiveTab(tab)} 
+        />
       </div>
     </div>
   )
