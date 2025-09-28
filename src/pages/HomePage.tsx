@@ -121,7 +121,7 @@ const HomePage: React.FC = () => {
 
       <div className="relative z-10 p-6">
         <div className="max-w-md mx-auto space-y-6">
-          {/* Enhanced Header with Settings */}
+          {/* Enhanced Header - Centered */}
           <div className="text-center mb-6 animate-fade-in">
             <div className="flex items-center justify-between mb-4">
               <button
@@ -137,24 +137,22 @@ const HomePage: React.FC = () => {
                 </svg>
               </button>
               
-              <div className="text-center flex-1">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-primary rounded-xl shadow-lg mb-3 animate-bounce-subtle">
-                  <span className="text-xl">🛰️</span>
-                </div>
-                <h1 className="text-2xl font-black" style={{ color: 'var(--text-primary)' }}>
-                  CelestiNav
-                </h1>
-                <p style={{ color: 'var(--text-secondary)' }} className="text-xs font-medium mt-1">
-                  Professional Navigation System
-                </p>
+              <div className="flex items-center">
+                <span className="status-dot status-online animate-pulse"></span>
               </div>
-              
-              <div className="flex flex-col items-end gap-2 flex-1">
-                <ThemeToggle />
-                <div className="flex items-center">
-                  <span className="status-dot status-online animate-pulse"></span>
-                </div>
+            </div>
+            
+            {/* Centered Title */}
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-primary rounded-xl shadow-lg mb-3 animate-bounce-subtle">
+                <span className="text-xl">🛰️</span>
               </div>
+              <h1 className="text-2xl font-black" style={{ color: 'var(--text-primary)' }}>
+                CelestiNav
+              </h1>
+              <p style={{ color: 'var(--text-secondary)' }} className="text-xs font-medium mt-1">
+                Professional Navigation System
+              </p>
             </div>
           </div>
 
@@ -203,6 +201,13 @@ const HomePage: React.FC = () => {
 
               {/* Additional Settings */}
               <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+                    Theme
+                  </span>
+                  <ThemeToggle />
+                </div>
+                
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
                     Auto-sync Data
