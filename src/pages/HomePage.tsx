@@ -356,9 +356,9 @@ const HomePage: React.FC = () => {
             >
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="relative z-10">
-                <span className="text-2xl mb-2 block animate-bounce-subtle" style={{ animationDelay: '1s' }}>🌤️</span>
-                <span className="text-white text-xs font-bold block leading-tight">Weather AI</span>
-                <span className="text-white/90 text-xs leading-tight">Neural Analysis</span>
+                <span className="text-2xl mb-2 block animate-bounce-subtle" style={{ animationDelay: '1s' }}>🤖</span>
+                <span className="text-white text-xs font-bold block leading-tight">AI</span>
+                <span className="text-white/90 text-xs leading-tight">Smart Tools</span>
               </div>
             </NavigationButton>
             <NavigationButton 
