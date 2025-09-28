@@ -39,19 +39,31 @@ const WeatherPage: React.FC = () => {
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream
+        videoRef.current.setAttribute('playsinline', 'true')
+        videoRef.current.setAttribute('autoplay', 'true')
+        videoRef.current.setAttribute('muted', 'true')
+        
         try {
+          // Force reload and play
+          videoRef.current.load()
           await videoRef.current.play()
         } catch (playError) {
           console.warn('Video play interrupted, retrying...', playError)
-          setTimeout(async () => {
+          // Multiple retry attempts
+          for (let i = 0; i < 3; i++) {
+            await new Promise(resolve => setTimeout(resolve, 200))
             try {
               if (videoRef.current && videoRef.current.srcObject) {
                 await videoRef.current.play()
+                break
               }
             } catch (retryError) {
-              console.error('Video play retry failed:', retryError)
+              if (i === 2) {
+                console.error('Video play failed after retries:', retryError)
+                setError('Camera preview failed to start. Try refreshing the page.')
+              }
             }
-          }, 100)
+          }
         }
       }
     } catch (err) {
@@ -133,12 +145,78 @@ const WeatherPage: React.FC = () => {
     setError(null)
 
     try {
-      const result = await apiService.analyzeWeather({
-        images: capturedImages,
-        location: { lat: 0, lng: 0 }
-      })
+      // Import the weather AI system
+      const { weatherAI } = await import('../services/weatherAI')
+      
+      // Validate and analyze each captured image
+      const skyAnalyses = []
+      const invalidImages = []
+      
+      for (const [direction, imageData] of Object.entries(capturedImages)) {
+        const skyAnalysis = await weatherAI.validateSkyPhoto(imageData)
+        
+        if (!skyAnalysis.isValidSky) {
+          invalidImages.push(direction)
+        } else {
+          skyAnalyses.push(skyAnalysis)
+        }
+      }
+      
+      if (invalidImages.length > 0) {
+        setError(`Invalid sky photos detected for: ${invalidImages.join(', ')}. Please recapture pointing at open sky only.`)
+        setIsAnalyzing(false)
+        return
+      }
+      
+      if (skyAnalyses.length === 0) {
+        setError('No valid sky photos found. Ensure you are pointing camera at open sky.')
+        setIsAnalyzing(false)
+        return
+      }
+      
+      // Generate comprehensive weather prediction
+      const weatherPrediction = await weatherAI.predictWeather(skyAnalyses)
+      
+      // Convert to expected format for display
+      const result = {
+        conditions: {
+          cloudCover: skyAnalyses.reduce((sum, s) => sum + s.cloudCoverage, 0) / skyAnalyses.length,
+          visibility: skyAnalyses.reduce((sum, s) => sum + s.visibility, 0) / skyAnalyses.length,
+          weatherType: skyAnalyses[0].skyType,
+          confidence: skyAnalyses.reduce((sum, s) => sum + s.confidence, 0) / skyAnalyses.length
+        },
+        analysis: {
+          classification: `Advanced AI Weather Analysis (${skyAnalyses.length} validated sky images)`,
+          confidence: skyAnalyses.reduce((sum, s) => sum + s.confidence, 0) / skyAnalyses.length,
+          details: `Comprehensive multi-directional sky analysis completed. ${weatherPrediction.forecast.next6Hours}`
+        },
+        timestamp: Date.now(),
+        prediction: weatherPrediction,
+        validationResults: skyAnalyses.map((analysis, index) => ({
+          direction: directions[index],
+          ...analysis
+        }))
+      }
       
       setAnalysisResult(result)
+      
+      // Save to offline database and try to sync with server
+      try {
+        await apiService.createWeatherReading({
+          cloud_cover: result.conditions.cloudCover,
+          visibility: result.conditions.visibility,
+          weather_type: result.conditions.weatherType,
+          confidence: result.conditions.confidence,
+          analysis_details: result.analysis.details,
+          image_count: skyAnalyses.length,
+          timestamp: result.timestamp,
+          validation_data: JSON.stringify(result.validationResults),
+          prediction_data: JSON.stringify(weatherPrediction)
+        })
+      } catch (serverError) {
+        console.warn('Server sync failed, data saved locally:', serverError)
+      }
+      
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Weather analysis failed')
     } finally {
@@ -328,10 +406,26 @@ const WeatherPage: React.FC = () => {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-white font-bold text-sm flex items-center">
                 <span className="mr-2">🌤️</span>
-                Weather Analysis Results
+                Advanced Weather Analysis
               </h3>
               <span className="status-dot status-online"></span>
             </div>
+            
+            {/* Validation Status */}
+            {analysisResult.validationResults && (
+              <div className="bg-white/10 rounded-lg p-4 mb-4">
+                <h4 className="text-white font-semibold mb-3 text-sm">🔍 Sky Photo Validation</h4>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  {analysisResult.validationResults.map((validation: any, index: number) => (
+                    <div key={index} className="flex items-center">
+                      <span className={`status-dot ${validation.isValidSky ? 'status-online' : 'status-error'} mr-2`}></span>
+                      <span className="text-white">{validation.direction}</span>
+                      <span className="text-white/60 ml-auto">{(validation.confidence * 100).toFixed(0)}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             
             {/* Current Conditions */}
             <div className="bg-white/10 rounded-lg p-4 mb-4">
@@ -350,45 +444,63 @@ const WeatherPage: React.FC = () => {
                   <span className="text-text-primary font-semibold capitalize">{analysisResult.conditions?.weatherType?.replace('_', ' ') || 'Clear'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-text-secondary">Confidence:</span>
+                  <span className="text-text-secondary">AI Confidence:</span>
                   <span className="text-text-primary font-semibold">{((analysisResult.conditions?.confidence || 0.9) * 100).toFixed(0)}%</span>
                 </div>
               </div>
             </div>
 
-            {/* Navigation Recommendations */}
-            <div className="bg-white/10 rounded-lg p-4">
-              <h4 className="text-white font-semibold mb-3 text-sm">📍 Navigation Recommendations</h4>
-              <div className="text-text-secondary text-sm space-y-2">
-                <div className="flex items-start">
-                  <span className="mr-2">☀️</span>
-                  <div>
-                    <strong className="text-text-primary">Solar Navigation:</strong> {
-                      (analysisResult.conditions?.cloudCover || 0) < 30 
-                        ? 'Excellent conditions'
-                        : (analysisResult.conditions?.cloudCover || 0) < 70
-                        ? 'Moderate conditions'
-                        : 'Use GPS backup'
-                    }
+            {/* Enhanced Navigation Recommendations */}
+            {analysisResult.prediction && (
+              <div className="bg-white/10 rounded-lg p-4 mb-4">
+                <h4 className="text-white font-semibold mb-3 text-sm">📍 Navigation Recommendations</h4>
+                <div className="text-text-secondary text-sm space-y-2">
+                  <div className="flex items-start">
+                    <span className="mr-2">☀️</span>
+                    <div>
+                      <strong className="text-text-primary">Solar Navigation:</strong> {
+                        analysisResult.prediction.navigationAdvice.solarNavigation === 'excellent' ? 'Excellent conditions' :
+                        analysisResult.prediction.navigationAdvice.solarNavigation === 'good' ? 'Good conditions' :
+                        analysisResult.prediction.navigationAdvice.solarNavigation === 'fair' ? 'Fair conditions' : 'Poor conditions'
+                      }
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-start">
-                  <span className="mr-2">🌟</span>
-                  <div>
-                    <strong className="text-text-primary">Star Navigation:</strong> {
-                      (analysisResult.conditions?.cloudCover || 0) < 20 
-                        ? 'Ideal for nighttime'
-                        : (analysisResult.conditions?.cloudCover || 0) < 50
-                        ? 'Limited visibility'
-                        : 'Not recommended'
-                    }
+                  <div className="flex items-start">
+                    <span className="mr-2">🌟</span>
+                    <div>
+                      <strong className="text-text-primary">Star Navigation:</strong> {
+                        analysisResult.prediction.navigationAdvice.starNavigation === 'excellent' ? 'Ideal for nighttime' :
+                        analysisResult.prediction.navigationAdvice.starNavigation === 'good' ? 'Good visibility' :
+                        analysisResult.prediction.navigationAdvice.starNavigation === 'fair' ? 'Limited visibility' : 'Not recommended'
+                      }
+                    </div>
                   </div>
+                  {analysisResult.prediction.navigationAdvice.gpsRecommended && (
+                    <div className="flex items-start">
+                      <span className="mr-2">📡</span>
+                      <div>
+                        <strong className="text-accent-warning">GPS Recommended:</strong> Primary navigation method advised
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* Weather Forecast */}
+            {analysisResult.prediction && (
+              <div className="bg-white/10 rounded-lg p-4">
+                <h4 className="text-white font-semibold mb-3 text-sm">⏰ Weather Forecast</h4>
+                <div className="text-text-secondary text-xs space-y-2">
+                  <div><strong className="text-white">Next Hour:</strong> {analysisResult.prediction.forecast.nextHour}</div>
+                  <div><strong className="text-white">Next 6 Hours:</strong> {analysisResult.prediction.forecast.next6Hours}</div>
+                  <div><strong className="text-white">Next 24 Hours:</strong> {analysisResult.prediction.forecast.next24Hours}</div>
+                </div>
+              </div>
+            )}
 
             <div className="text-white/60 text-xs mt-3 text-center">
-              Analysis completed at {new Date().toLocaleTimeString()}
+              AI Analysis completed at {new Date().toLocaleTimeString()} • Offline Capable
             </div>
           </div>
         )}
