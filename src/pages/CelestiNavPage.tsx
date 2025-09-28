@@ -190,9 +190,19 @@ const CelestiNavPage: React.FC = () => {
     }
   }, [cameraStream])
 
-  // Full-screen camera interface with disabled scrolling
+  // Full-screen mobile camera interface with touch optimizations
   return (
-    <div className="fixed inset-0 bg-black z-50 overflow-hidden touch-none" style={{ height: '100vh', width: '100vw', position: 'fixed' }}>
+    <div 
+      className="fixed inset-0 bg-black z-50 overflow-hidden touch-none select-none" 
+      style={{ 
+        height: '100vh', 
+        width: '100vw', 
+        position: 'fixed',
+        WebkitUserSelect: 'none',
+        WebkitTouchCallout: 'none',
+        WebkitTapHighlightColor: 'transparent'
+      }}
+    >
       {/* Camera Video Feed */}
       {isCameraActive && (
         <video
@@ -201,16 +211,20 @@ const CelestiNavPage: React.FC = () => {
           autoPlay
           playsInline
           muted
+          style={{
+            WebkitTransform: 'translateZ(0)', // Hardware acceleration
+            transform: 'translateZ(0)'
+          }}
         />
       )}
 
       {/* Camera not available overlay */}
       {!isCameraActive && (
         <div className="absolute inset-0 bg-black flex items-center justify-center">
-          <div className="text-center text-white">
-            <div className="text-6xl mb-4">📷</div>
-            <p className="text-lg mb-4">Starting camera...</p>
-            {error && <p className="text-red-400 text-sm">{error}</p>}
+          <div className="text-center text-white px-4">
+            <div className="text-6xl mb-4 animate-pulse">📷</div>
+            <p className="text-lg mb-4 font-medium">Starting camera...</p>
+            {error && <p className="text-red-400 text-sm max-w-sm mx-auto leading-relaxed">{error}</p>}
           </div>
         </div>
       )}
@@ -279,76 +293,106 @@ const CelestiNavPage: React.FC = () => {
         </div>
       )}
 
-      {/* Camera Controls - Bottom Center */}
-      <div className="absolute bottom-32 left-1/2 -translate-x-1/2 z-20 flex items-center gap-6">
-        {/* Database Button - Left of Shutter */}
+      {/* Camera Controls - Bottom Center - Mobile Optimized */}
+      <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 flex items-center gap-8">
+        {/* Database Button - Left of Shutter - Larger touch target */}
         <button
           onClick={toggleDatabase}
-          className="w-12 h-12 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-lg border border-white/30 active:scale-95 transition-transform"
+          className="w-16 h-16 bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-xl border-2 border-white/40 active:scale-90 transition-all duration-150 shadow-xl"
+          style={{ minHeight: '44px', minWidth: '44px' }} // iOS touch target minimum
         >
-          📊
+          <span role="img" aria-label="Database">📊</span>
         </button>
         
-        {/* Shutter Button */}
+        {/* Shutter Button - Enhanced for mobile */}
         <button
           onClick={captureReading}
           disabled={isCalculating || !sensorPermission}
-          className="w-14 h-14 bg-white border-3 border-white rounded-full shadow-lg active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-20 h-20 bg-white border-4 border-white rounded-full shadow-2xl active:scale-90 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden"
+          style={{ 
+            minHeight: '44px', 
+            minWidth: '44px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 0 0 4px rgba(255,255,255,0.2)'
+          }}
         >
           {isCalculating ? (
-            <div className="w-full h-full rounded-full bg-yellow-400 flex items-center justify-center">
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+            <div className="w-full h-full rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-6 w-6 border-3 border-white border-t-transparent"></div>
             </div>
           ) : (
-            <div className="w-full h-full rounded-full bg-red-500"></div>
+            <div className="w-full h-full rounded-full bg-gradient-to-br from-red-500 to-red-600 shadow-inner"></div>
+          )}
+          
+          {/* Pulse animation ring for better visibility */}
+          {sensorPermission && !isCalculating && (
+            <div className="absolute inset-0 rounded-full border-2 border-white/30 animate-ping"></div>
           )}
         </button>
       </div>
 
-      {/* Settings Button - Bottom Right */}
-      <div className="absolute bottom-4 right-4 z-10">
+      {/* Settings Button - Bottom Right - Mobile Optimized */}
+      <div className="absolute bottom-6 right-6 z-10">
         <button
           onClick={() => {
-            // Simple toggle for basic environmental settings
-            const newElevation = prompt(`Current elevation: ${elevation}m\nEnter new elevation:`, elevation.toString())
-            if (newElevation && !isNaN(Number(newElevation))) {
+            // Mobile-optimized prompt with better UX
+            const newElevation = prompt(`🏔️ Current elevation: ${elevation}m\n\nEnter new elevation (meters):`, elevation.toString())
+            if (newElevation && !isNaN(Number(newElevation)) && Number(newElevation) >= -500 && Number(newElevation) <= 9000) {
               setElevation(Number(newElevation))
+            } else if (newElevation && isNaN(Number(newElevation))) {
+              alert('Please enter a valid number')
             }
           }}
-          className="w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-sm border border-white/30 active:scale-95 transition-transform"
+          className="w-14 h-14 bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-lg border-2 border-white/40 active:scale-90 transition-all duration-150 shadow-xl"
+          style={{ minHeight: '44px', minWidth: '44px' }}
         >
-          ⚙️
+          <span role="img" aria-label="Settings">⚙️</span>
         </button>
       </div>
 
-      {/* Database Panel */}
+      {/* Database Panel - Mobile Optimized */}
       {showDatabase && (
-        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm z-30 flex items-center justify-center p-4">
-          <div className="bg-black/90 rounded-lg p-4 max-w-sm w-full max-h-96 overflow-y-auto">
+        <div className="absolute inset-0 bg-black/85 backdrop-blur-sm z-30 flex items-end justify-center">
+          <div 
+            className="bg-black/95 rounded-t-2xl p-4 w-full max-h-[80vh] overflow-hidden shadow-2xl"
+            style={{ 
+              WebkitOverflowScrolling: 'touch',
+              transform: 'translateZ(0)' // Hardware acceleration
+            }}
+          >
+            {/* Handle bar for swipe gesture indication */}
+            <div className="w-12 h-1 bg-white/30 rounded-full mx-auto mb-4"></div>
+            
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-bold text-lg">Stored Locations</h3>
+              <h3 className="text-white font-bold text-xl">📍 Stored Locations</h3>
               <button
                 onClick={toggleDatabase}
-                className="text-white/70 hover:text-white text-xl"
+                className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-white/70 hover:text-white text-xl active:scale-90 transition-all"
+                style={{ minHeight: '44px', minWidth: '44px' }}
               >
                 ✕
               </button>
             </div>
             
+            <div className="overflow-y-auto max-h-[60vh] pr-2" style={{ WebkitOverflowScrolling: 'touch' }}>
+            
             {measurements.length === 0 ? (
-              <div className="text-center text-white/70 py-8">
-                <div className="text-3xl mb-2">📍</div>
-                <p>No measurements saved yet</p>
-                <p className="text-sm mt-1">Capture your first reading!</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {measurements.slice(0, 10).map((measurement) => (
-                  <button
-                    key={measurement.id}
-                    onClick={() => selectMeasurement(measurement)}
-                    className="w-full text-left p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors border border-white/20"
-                  >
+                <div className="text-center text-white/70 py-12">
+                  <div className="text-5xl mb-4 animate-bounce">📍</div>
+                  <p className="text-lg font-medium">No measurements saved yet</p>
+                  <p className="text-sm mt-2 text-white/50">Capture your first reading!</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {measurements.slice(0, 10).map((measurement) => (
+                    <button
+                      key={measurement.id}
+                      onClick={() => selectMeasurement(measurement)}
+                      className="w-full text-left p-4 bg-white/10 hover:bg-white/20 active:bg-white/30 rounded-xl transition-all duration-200 border border-white/20 active:scale-[0.98]"
+                      style={{ 
+                        minHeight: '44px',
+                        WebkitTapHighlightColor: 'transparent'
+                      }}
+                    >
                     <div className="flex justify-between items-start mb-1">
                       <span className="text-white font-medium text-sm">
                         #{measurement.id}
@@ -411,16 +455,24 @@ const CelestiNavPage: React.FC = () => {
         </div>
       )}
 
-      {/* Status indicator - bottom left */}
-      <div className="absolute bottom-4 left-4 text-white text-xs z-10">
-        <div className="bg-black/50 backdrop-blur-sm rounded px-2 py-1">
-          <div className="flex items-center gap-1">
-            <span className={`w-2 h-2 rounded-full ${sensorPermission ? 'bg-green-400' : 'bg-red-400'}`}></span>
-            <span>{sensorPermission ? 'SENSORS ACTIVE' : 'NO SENSORS'}</span>
+      {/* Status indicator - bottom left - Mobile enhanced */}
+      <div className="absolute bottom-6 left-6 text-white text-sm z-10">
+        <div className="bg-black/70 backdrop-blur-sm rounded-xl px-3 py-2 border border-white/20">
+          <div className="flex items-center gap-2">
+            <span 
+              className={`w-3 h-3 rounded-full ${sensorPermission ? 'bg-green-400 animate-pulse' : 'bg-red-400'} shadow-lg`}
+              style={{
+                boxShadow: sensorPermission ? '0 0 10px rgba(34, 197, 94, 0.5)' : '0 0 10px rgba(239, 68, 68, 0.5)'
+              }}
+            ></span>
+            <span className="font-medium">
+              {sensorPermission ? 'SENSORS ON' : 'NO SENSORS'}
+            </span>
           </div>
           {measurements.length > 0 && (
-            <div className="mt-1 text-white/70">
-              {measurements.length} saved
+            <div className="mt-1 text-white/70 text-xs flex items-center gap-1">
+              <span>📊</span>
+              <span>{measurements.length} saved</span>
             </div>
           )}
         </div>

@@ -79,7 +79,7 @@ html, body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Disable scrolling completely for camera pages */
+/* Mobile-optimized touch and scroll handling */
 .touch-none {
   touch-action: none;
   overscroll-behavior: none;
@@ -90,6 +90,48 @@ html, body {
   left: 0;
   right: 0;
   bottom: 0;
+  /* Prevent iOS bounce and zoom */
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Mobile-specific touch optimizations */
+@media (hover: none) and (pointer: coarse) {
+  /* Better touch feedback */
+  button {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+  }
+  
+  /* Larger minimum touch targets */
+  button, .touchable {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Enhanced active states for mobile */
+  button:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease-out;
+  }
+  
+  /* Prevent text selection on mobile */
+  * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  /* Allow text selection in input fields */
+  input, textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
 }
 
 #root {
@@ -417,7 +459,7 @@ html {
   scroll-padding: 20px;
 }
 
-/* Enhanced mobile interactions */
+/* Enhanced mobile interactions and performance */
 @media (hover: none) and (pointer: coarse) {
   /* Mobile-specific touch interactions */
   .card-hover:hover {
@@ -432,6 +474,25 @@ html {
   /* Better touch targets */
   button, .action-card {
     min-height: 44px;
+  }
+  
+  /* Mobile performance optimizations */
+  video {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+  
+  /* Smooth scrolling on mobile */
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+    transform: translateZ(0);
+  }
+  
+  /* Prevent iOS zoom on input focus */
+  input, select, textarea {
+    font-size: 16px !important;
   }
 }
 
