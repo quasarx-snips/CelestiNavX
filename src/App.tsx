@@ -4,13 +4,14 @@ import BottomNavigation from './components/BottomNavigation'
 import HomePage from './pages/HomePage'
 import CelestiNavPage from './pages/CelestiNavPage'
 import WeatherPage from './pages/WeatherPage'
+import AIPage from './pages/AIPage'
 import RadarPage from './pages/RadarPage'
 import SOSPage from './pages/SOSPage'
 import LandingPage from './pages/LandingPage'
 import { useDatabase } from './hooks/useDatabase'
 import { useAuth } from './hooks/useAuth'
 
-type TabType = 'home' | 'celestinav' | 'weather' | 'radar' | 'sos'
+type TabType = 'home' | 'celestinav' | 'weather' | 'weather-analysis' | 'radar' | 'sos'
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('home')
@@ -21,7 +22,7 @@ function App() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '') as TabType
-      if (['home', 'celestinav', 'weather', 'radar', 'sos'].includes(hash)) {
+      if (['home', 'celestinav', 'weather', 'weather-analysis', 'radar', 'sos'].includes(hash)) {
         setActiveTab(hash)
       }
     }
@@ -67,6 +68,8 @@ function App() {
         case 'celestinav':
           return <CelestiNavPage />
         case 'weather':
+          return <AIPage />
+        case 'weather-analysis':
           return <WeatherPage />
         case 'radar':
           return <RadarPage />
