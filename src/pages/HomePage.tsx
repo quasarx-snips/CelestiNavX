@@ -59,21 +59,21 @@ const HomePage: React.FC = () => {
       <div className="relative z-10 p-6">
         <div className="max-w-md mx-auto space-y-6">
           {/* Enhanced Header */}
-          <div className="text-center mb-8 animate-fade-in">
-            <div className="flex items-center justify-between mb-6">
+          <div className="text-center mb-6 animate-fade-in">
+            <div className="flex items-center justify-between mb-4">
               <div className="flex-1"></div>
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-primary rounded-2xl shadow-glow-purple mb-4 animate-bounce-subtle">
-                  <span className="text-2xl">🛰️</span>
+              <div className="text-center flex-1">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-primary rounded-xl shadow-lg mb-3 animate-bounce-subtle">
+                  <span className="text-xl">🛰️</span>
                 </div>
-                <h1 className="text-3xl font-black text-contrast-high bg-gradient-primary bg-clip-text text-transparent">
+                <h1 className="text-2xl font-black text-white drop-shadow-lg">
                   CelestiNav
                 </h1>
-                <p className="text-contrast-medium text-sm font-medium mt-1">
+                <p className="text-white/80 text-xs font-medium mt-1">
                   Professional Navigation System
                 </p>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col items-end gap-2 flex-1">
                 <ThemeToggle />
                 <div className="flex items-center">
                   <span className="status-dot status-online animate-pulse"></span>
@@ -83,67 +83,67 @@ const HomePage: React.FC = () => {
           </div>
 
           {/* Professional Status Cards */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="gradient-card-blue text-center relative overflow-hidden animate-slide-up" style={{ animationDelay: '100ms' }}>
-              <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
+          <div className="grid grid-cols-2 gap-3 mb-5">
+            <div className="gradient-card-blue text-center relative overflow-hidden animate-slide-up p-3" style={{ animationDelay: '100ms' }}>
+              <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full -translate-y-8 translate-x-8"></div>
               <div className="relative z-10">
-                <div className="flex items-center justify-center mb-2">
-                  <span className="text-2xl mb-1">⚡</span>
+                <div className="flex items-center justify-center mb-1">
+                  <span className="text-xl">⚡</span>
                 </div>
-                <span className="text-white text-sm font-semibold block">Offline Ready</span>
-                <span className="text-white/80 text-xs">System Active</span>
+                <span className="text-white text-xs font-semibold block leading-tight">Offline Ready</span>
+                <span className="text-white/90 text-xs leading-tight">System Active</span>
               </div>
             </div>
-            <div className="gradient-card-purple text-center relative overflow-hidden animate-slide-up" style={{ animationDelay: '200ms' }}>
-              <div className="absolute top-0 left-0 w-16 h-16 bg-white/10 rounded-full -translate-y-8 -translate-x-8"></div>
+            <div className="gradient-card-purple text-center relative overflow-hidden animate-slide-up p-3" style={{ animationDelay: '200ms' }}>
+              <div className="absolute top-0 left-0 w-14 h-14 bg-white/10 rounded-full -translate-y-7 -translate-x-7"></div>
               <div className="relative z-10">
-                <div className="flex items-center justify-center mb-2">
-                  <span className="text-2xl mb-1">🤖</span>
+                <div className="flex items-center justify-center mb-1">
+                  <span className="text-xl">🤖</span>
                 </div>
-                <span className="text-white text-sm font-semibold block">AI Powered</span>
-                <span className="text-white/80 text-xs">Neural Net Active</span>
+                <span className="text-white text-xs font-semibold block leading-tight">AI Powered</span>
+                <span className="text-white/90 text-xs leading-tight">Neural Net Active</span>
               </div>
             </div>
           </div>
 
           {/* Enhanced User Profile */}
           {user && (
-            <div className="card p-5 backdrop-blur-sm border border-white/10 animate-fade-in" style={{ animationDelay: '300ms' }}>
+            <div className="card p-4 backdrop-blur-sm border border-white/20 animate-fade-in bg-black/40" style={{ animationDelay: '300ms' }}>
               <div className="flex items-center justify-between">
-                <div className="flex items-center">
+                <div className="flex items-center flex-1 min-w-0">
                   {user.profile_image_url ? (
-                    <div className="relative">
+                    <div className="relative flex-shrink-0">
                       <img 
                         src={user.profile_image_url} 
                         alt="Profile" 
-                        className="w-12 h-12 rounded-2xl object-cover mr-4 ring-2 ring-accent-primary/30 shadow-card"
+                        className="w-10 h-10 rounded-xl object-cover mr-3 ring-2 ring-blue-400/30 shadow-card"
                       />
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                      <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
                     </div>
                   ) : (
-                    <div className="relative mr-4">
-                      <div className="w-12 h-12 bg-gradient-primary rounded-2xl flex items-center justify-center shadow-glow-purple">
-                        <span className="text-white font-bold text-lg">
+                    <div className="relative mr-3 flex-shrink-0">
+                      <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center shadow-lg">
+                        <span className="text-white font-bold text-sm">
                           {(user.first_name || user.email || 'U')[0].toUpperCase()}
                         </span>
                       </div>
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                      <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
                     </div>
                   )}
-                  <div>
-                    <p className="text-contrast-high font-bold text-base">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-white font-bold text-sm truncate">
                       {user.first_name} {user.last_name}
                     </p>
-                    <p className="text-contrast-medium text-sm">{user.email}</p>
+                    <p className="text-white/70 text-xs truncate">{user.email}</p>
                     <div className="flex items-center mt-1">
-                      <span className="status-dot bg-green-500 mr-2"></span>
-                      <p className="text-green-600 text-xs font-medium">Active Session</p>
+                      <span className="status-dot bg-green-500 mr-1.5"></span>
+                      <p className="text-green-400 text-xs font-medium">Active Session</p>
                     </div>
                   </div>
                 </div>
                 <button 
                   onClick={logout}
-                  className="text-accent-error text-sm font-semibold hover:text-red-400 transition-all duration-200 py-2 px-3 rounded-button hover:bg-red-50/10"
+                  className="text-red-400 text-xs font-semibold hover:text-red-300 transition-all duration-200 py-2 px-2 rounded-lg hover:bg-red-500/20 flex-shrink-0 ml-2"
                 >
                   Sign Out
                 </button>
@@ -152,32 +152,32 @@ const HomePage: React.FC = () => {
           )}
 
           {/* Professional Status Dashboard */}
-          <div className="card p-6 backdrop-blur-sm border border-white/10 animate-slide-up" style={{ animationDelay: '400ms' }}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold text-contrast-high flex items-center">
-                <span className="w-2 h-2 bg-green-500 rounded-full mr-3 animate-pulse"></span>
+          <div className="card p-4 backdrop-blur-sm border border-white/20 animate-slide-up bg-black/40" style={{ animationDelay: '400ms' }}>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-bold text-white flex items-center">
+                <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
                 System Status
               </h3>
-              <div className="text-contrast-medium text-sm font-mono">
+              <div className="text-white/70 text-xs font-mono">
                 {currentTime.toLocaleTimeString([], { hour12: false })}
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-3 bg-gradient-to-br from-surface-100 to-surface-200 rounded-xl">
-                <div className="text-2xl font-bold text-accent-warning">Day</div>
-                <div className="text-xs text-contrast-medium font-medium">Mode</div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="text-center p-3 bg-gradient-to-br from-slate-700 to-slate-600 rounded-lg shadow-lg">
+                <div className="text-lg font-bold text-yellow-400">Day</div>
+                <div className="text-xs text-white/80 font-medium">Mode</div>
               </div>
-              <div className="text-center p-3 bg-gradient-to-br from-surface-100 to-surface-200 rounded-xl">
-                <div className="text-2xl font-bold text-accent-error">---</div>
-                <div className="text-xs text-contrast-medium font-medium">Altitude ASL</div>
+              <div className="text-center p-3 bg-gradient-to-br from-slate-700 to-slate-600 rounded-lg shadow-lg">
+                <div className="text-lg font-bold text-red-400">---</div>
+                <div className="text-xs text-white/80 font-medium">Altitude ASL</div>
               </div>
-              <div className="text-center p-3 bg-gradient-to-br from-surface-100 to-surface-200 rounded-xl">
-                <div className="text-2xl font-bold text-contrast-high">1.2°</div>
-                <div className="text-xs text-contrast-medium font-medium">Declination</div>
+              <div className="text-center p-3 bg-gradient-to-br from-slate-700 to-slate-600 rounded-lg shadow-lg">
+                <div className="text-lg font-bold text-white">1.2°</div>
+                <div className="text-xs text-white/80 font-medium">Declination</div>
               </div>
-              <div className="text-center p-3 bg-gradient-to-br from-surface-100 to-surface-200 rounded-xl">
-                <div className="text-2xl font-bold text-green-600">GPS</div>
-                <div className="text-xs text-contrast-medium font-medium">Ready</div>
+              <div className="text-center p-3 bg-gradient-to-br from-slate-700 to-slate-600 rounded-lg shadow-lg">
+                <div className="text-lg font-bold text-green-400">GPS</div>
+                <div className="text-xs text-white/80 font-medium">Ready</div>
               </div>
             </div>
           </div>
@@ -194,29 +194,29 @@ const HomePage: React.FC = () => {
           </NavigationButton>
 
           {/* Professional Action Grid */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <NavigationButton 
               onClick={() => window.location.hash = '#weather'}
-              className="gradient-card-pink text-center cursor-pointer hover:scale-105 hover:shadow-glow-pink transition-all duration-300 relative overflow-hidden group animate-slide-up"
+              className="gradient-card-pink text-center cursor-pointer hover:scale-105 hover:shadow-glow-pink transition-all duration-300 relative overflow-hidden group animate-slide-up p-4"
               delay={600}
             >
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="relative z-10">
-                <span className="text-3xl mb-3 block animate-bounce-subtle" style={{ animationDelay: '1s' }}>🌤️</span>
-                <span className="text-white text-sm font-bold block">Weather AI</span>
-                <span className="text-white/80 text-xs">Neural Analysis</span>
+                <span className="text-2xl mb-2 block animate-bounce-subtle" style={{ animationDelay: '1s' }}>🌤️</span>
+                <span className="text-white text-xs font-bold block leading-tight">Weather AI</span>
+                <span className="text-white/90 text-xs leading-tight">Neural Analysis</span>
               </div>
             </NavigationButton>
             <NavigationButton 
               onClick={() => window.location.hash = '#radar'}
-              className="gradient-card-blue text-center cursor-pointer hover:scale-105 hover:shadow-glow-blue transition-all duration-300 relative overflow-hidden group animate-slide-up"
+              className="gradient-card-blue text-center cursor-pointer hover:scale-105 hover:shadow-glow-blue transition-all duration-300 relative overflow-hidden group animate-slide-up p-4"
               delay={700}
             >
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="relative z-10">
-                <span className="text-3xl mb-3 block animate-bounce-subtle" style={{ animationDelay: '1.2s' }}>📡</span>
-                <span className="text-white text-sm font-bold block">Cell Radar</span>
-                <span className="text-white/80 text-xs">Signal Detection</span>
+                <span className="text-2xl mb-2 block animate-bounce-subtle" style={{ animationDelay: '1.2s' }}>📡</span>
+                <span className="text-white text-xs font-bold block leading-tight">Cell Radar</span>
+                <span className="text-white/90 text-xs leading-tight">Signal Detection</span>
               </div>
             </NavigationButton>
           </div>
@@ -232,17 +232,17 @@ const HomePage: React.FC = () => {
           </NavigationButton>
 
           {/* Professional Footer */}
-          <div className="text-center space-y-3 pt-4 animate-fade-in" style={{ animationDelay: '900ms' }}>
+          <div className="text-center space-y-2 pt-3 animate-fade-in" style={{ animationDelay: '900ms' }}>
             <div className="flex items-center justify-center">
               <span className="status-dot status-online mr-2"></span>
-              <span className="text-contrast-medium text-sm font-medium">All systems operational</span>
+              <span className="text-white/80 text-xs font-medium">All systems operational</span>
             </div>
-            <div className="flex items-center justify-center space-x-4 text-xs text-contrast-medium">
+            <div className="flex items-center justify-center space-x-3 text-xs text-white/60">
               <span>Last sync: {currentTime.toLocaleDateString()}</span>
               <span>•</span>
               <span>Build: 2.1.0</span>
               <span>•</span>
-              <span className="text-green-600 font-medium">Secure</span>
+              <span className="text-green-400 font-medium">Secure</span>
             </div>
           </div>
         </div>
