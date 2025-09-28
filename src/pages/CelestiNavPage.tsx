@@ -435,6 +435,7 @@ const CelestiNavPage: React.FC = () => {
                 )}
               </div>
             )}
+            </div>
           </div>
         </div>
       )}
